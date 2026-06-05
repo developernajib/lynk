@@ -1,0 +1,22 @@
+# golangci-lint (v2) config. The framework core is hand-written stdlib-first
+# code, so everything is linted strictly with no path exclusions.
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - ineffassign
+    - unused
+    - misspell
+    - bodyclose
+    - noctx
+    - gosec
+    - errorlint
+    - sqlclosecheck
+    - rowserrcheck
+    - contextcheck

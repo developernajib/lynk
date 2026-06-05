@@ -1,0 +1,10 @@
+# Secrets / local env
+.env
+*.pem
+
+# Build output
+/bin/
+*.exe
+
+# OS / editor noise
+.DS_Store
