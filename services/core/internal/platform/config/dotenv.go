@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -29,14 +30,17 @@ func LoadDotenv(paths ...string) error {
 }
 
 func loadDotenvFile(path string) error {
-	f, err := os.Open(path)
+	// The path is operator-supplied startup configuration, not user input;
+	// Clean still normalizes it before the open.
+	f, err := os.Open(filepath.Clean(path))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
 		return fmt.Errorf("config: open %s: %w", path, err)
 	}
-	defer f.Close()
+	// Close error is irrelevant on a file only ever read.
+	defer func() { _ = f.Close() }()
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
