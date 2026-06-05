@@ -1,3 +1,3 @@
-module github.com/developernajib/lynk/services/core
+module github.com/lynk/core
 
 go 1.26.3
