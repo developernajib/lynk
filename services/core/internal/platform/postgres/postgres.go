@@ -2,15 +2,19 @@
 // manager. It hands repositories ready pools; repositories own the SQL. This
 // package knows nothing about tables or domain types.
 //
-// Two pools implement the per-service read/write split: writes and
+// The pools implement the per-service read/write split: writes and
 // read-your-writes/money/auth reads use Write (the primary), high-volume
-// staleness-tolerant reads use Read (the replica).
+// staleness-tolerant reads use Read(), which balances across any number of
+// replicas. Scaling reads is therefore configuration (add a replica URL), not
+// code. Past a handful of replicas, prefer PgBouncer or a load balancer in
+// front of one read URL instead of growing the list.
 package postgres
 
 import (
 	"context"
 	"fmt"
 	"runtime"
+	"sync/atomic"
 	"time"
 
 	"github.com/exaring/otelpgx"
@@ -21,10 +25,10 @@ import (
 type Config struct {
 	// WriteURL is the primary (read-write) connection string. Required.
 	WriteURL string
-	// ReadURL is the replica connection string. Empty means no replica; the
-	// read pool then aliases the primary, which is correct, just less
-	// scalable.
-	ReadURL string
+	// ReadURLs lists zero or more read-replica connection strings. Empty
+	// means reads run on the primary (correct, just less scalable); multiple
+	// URLs are balanced round-robin. Pool settings below apply per pool.
+	ReadURLs []string
 	// MaxConns caps connections per pool. Default 4 per CPU.
 	MaxConns int32
 	// MinConns keeps a warm floor of idle connections against cold-start
@@ -53,21 +57,21 @@ func (c Config) withDefaults() Config {
 	return c
 }
 
-// Pools bundles the primary and replica pools so bootstrap wires "the
-// database" as one dependency and the pool choice reads explicitly at every
-// call site (pools.Read vs pools.Write).
+// Pools bundles the primary pool with the replica pools so bootstrap wires
+// "the database" as one dependency. Repositories choose by intent:
+// pools.Write for writes and read-your-writes, pools.Read() for everything
+// staleness-tolerant.
 type Pools struct {
 	// Write is the primary, read-write pool. Always present.
 	Write *pgxpool.Pool
-	// Read is the replica pool, or the same primary pool when no replica is
-	// configured, so callers never nil-check.
-	Read *pgxpool.Pool
-	// readIsPrimary prevents Close from closing the aliased pool twice.
-	readIsPrimary bool
+
+	reads []*pgxpool.Pool
+	next  atomic.Uint64
 }
 
-// Connect builds both pools and verifies connectivity. ctx bounds the initial
-// connection so a dead database fails startup fast instead of hanging.
+// Connect builds the primary and every configured replica pool, verifying
+// connectivity on each. ctx bounds the initial connections so a dead database
+// fails startup fast instead of hanging.
 func Connect(ctx context.Context, cfg Config) (*Pools, error) {
 	cfg = cfg.withDefaults()
 
@@ -76,18 +80,38 @@ func Connect(ctx context.Context, cfg Config) (*Pools, error) {
 		return nil, fmt.Errorf("postgres: connect primary: %w", err)
 	}
 
-	if cfg.ReadURL == "" {
-		return &Pools{Write: write, Read: write, readIsPrimary: true}, nil
+	reads := make([]*pgxpool.Pool, 0, len(cfg.ReadURLs))
+	for i, url := range cfg.ReadURLs {
+		read, err := newPool(ctx, url, cfg)
+		if err != nil {
+			// Never leak already-opened pools on a partial failure.
+			write.Close()
+			for _, opened := range reads {
+				opened.Close()
+			}
+			return nil, fmt.Errorf("postgres: connect replica %d: %w", i+1, err)
+		}
+		reads = append(reads, read)
 	}
 
-	read, err := newPool(ctx, cfg.ReadURL, cfg)
-	if err != nil {
-		// Never leak the primary on a partial failure.
-		write.Close()
-		return nil, fmt.Errorf("postgres: connect replica: %w", err)
-	}
+	return &Pools{Write: write, reads: reads}, nil
+}
 
-	return &Pools{Write: write, Read: read, readIsPrimary: false}, nil
+// Read returns the pool for staleness-tolerant reads: the primary when no
+// replica is configured, otherwise the next replica in round-robin order.
+// Balancing is per call, so one slow query never pins a hot replica.
+func (p *Pools) Read() *pgxpool.Pool {
+	switch len(p.reads) {
+	case 0:
+		return p.Write
+	case 1:
+		return p.reads[0]
+	default:
+		n := p.next.Add(1)
+		// A slice index may be any integer type; staying in uint64 avoids a
+		// down-conversion, and the modulo keeps it in range.
+		return p.reads[n%uint64(len(p.reads))]
+	}
 }
 
 func newPool(ctx context.Context, url string, cfg Config) (*pgxpool.Pool, error) {
@@ -121,10 +145,10 @@ func newPool(ctx context.Context, url string, cfg Config) (*pgxpool.Pool, error)
 	return pool, nil
 }
 
-// Close releases both pools during graceful shutdown.
+// Close releases every pool during graceful shutdown.
 func (p *Pools) Close() {
 	p.Write.Close()
-	if !p.readIsPrimary {
-		p.Read.Close()
+	for _, read := range p.reads {
+		read.Close()
 	}
 }
