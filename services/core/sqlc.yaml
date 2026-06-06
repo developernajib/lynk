@@ -1,0 +1,22 @@
+# sqlc generates type-safe Go from raw SQL (the locked data-access choice
+# over an ORM): full control, no hidden N+1, type-checked against the schema
+# at generate time, parameterized queries only. Generated code is committed
+# but never hand-edited.
+version: "2"
+
+sql:
+  - engine: postgresql
+    # The schema is the union of the migrations, so sqlc validates queries
+    # against the real, current table definitions.
+    schema: migrations
+    queries: sqlc/queries
+    gen:
+      go:
+        package: db
+        out: internal/gen/db
+        sql_package: pgx/v5
+        emit_json_tags: true
+        # Nullable columns become pointers so "absent" differs from "zero".
+        emit_pointers_for_null_types: true
+        # An interface over the queries lets repositories be faked.
+        emit_interface: true

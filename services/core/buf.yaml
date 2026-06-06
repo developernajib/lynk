@@ -1,0 +1,29 @@
+# buf configuration for THIS service's protos. Each service owns its protos
+# under proto/ and has its own buf module; there is no shared proto module.
+# A caller needing another service's contract vendors a copy of that .proto.
+version: v2
+
+modules:
+  # proto/<package>/v1/<thing>.proto
+  - path: proto
+
+deps:
+  # Well-known types (timestamp, empty, field_mask, ...).
+  - buf.build/protocolbuffers/wellknowntypes
+  # protovalidate: field rules enforced by the gRPC validation interceptor.
+  - buf.build/bufbuild/protovalidate
+
+lint:
+  use:
+    - STANDARD # all recommended style/naming rules
+    - COMMENTS # require doc comments on every public RPC and message
+  except:
+    # "example.v1" style packages use a dot before the version - intentional.
+    - PACKAGE_VERSION_SUFFIX
+    # Allow reusing a shared Empty/Ack message across multiple RPCs.
+    - RPC_REQUEST_RESPONSE_UNIQUE
+
+breaking:
+  use:
+    - FILE    # catch deleted files / renamed packages
+    - PACKAGE # catch renamed fields / changed types

@@ -1,0 +1,101 @@
+// Example module contract: the copy-me template for new modules. It shows
+// the full surface a hexagon module exposes: create/get/update/list with
+// protovalidate rules, optimistic-locking versions, and tenant scoping
+// derived from the authenticated principal (never from request fields).
+syntax = "proto3";
+
+package example.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/developernajib/lynk/services/core/internal/gen/proto/example/v1;examplev1";
+
+// ExampleService manages notes, the stand-in aggregate demonstrating the
+// module pattern end to end (domain, application, adapter, infrastructure).
+service ExampleService {
+  // CreateNote creates a note owned by the authenticated principal.
+  rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse);
+  // GetNote returns one note by id.
+  rpc GetNote(GetNoteRequest) returns (GetNoteResponse);
+  // UpdateNote retitles or rewrites a note, guarded by optimistic locking.
+  rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse);
+  // ListNotes pages through the principal's notes, newest first.
+  rpc ListNotes(ListNotesRequest) returns (ListNotesResponse);
+}
+
+// Note is the read representation of the aggregate.
+message Note {
+  // id is the note's UUIDv7.
+  string id = 1;
+  // title is the short display name.
+  string title = 2;
+  // body is the free-form content.
+  string body = 3;
+  // version increments on every update (optimistic locking).
+  int64 version = 4;
+  // created_at is when the note was created.
+  google.protobuf.Timestamp created_at = 5;
+  // updated_at is when the note last changed.
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+// CreateNoteRequest carries the new note's content.
+message CreateNoteRequest {
+  // title must be 1-200 characters after trimming.
+  string title = 1 [(buf.validate.field).string = {min_len: 1, max_len: 200}];
+  // body is optional and capped to keep messages bounded.
+  string body = 2 [(buf.validate.field).string.max_len = 10000];
+}
+
+// CreateNoteResponse returns the created note.
+message CreateNoteResponse {
+  // note is the freshly created aggregate.
+  Note note = 1;
+}
+
+// GetNoteRequest identifies the note to fetch.
+message GetNoteRequest {
+  // id is the note's UUID.
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+// GetNoteResponse returns the requested note.
+message GetNoteResponse {
+  // note is the requested aggregate.
+  Note note = 1;
+}
+
+// UpdateNoteRequest carries the changed fields plus the version the caller
+// read, so a concurrent edit is detected instead of silently overwritten.
+message UpdateNoteRequest {
+  // id is the note's UUID.
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  // title must be 1-200 characters after trimming.
+  string title = 2 [(buf.validate.field).string = {min_len: 1, max_len: 200}];
+  // body is optional and capped.
+  string body = 3 [(buf.validate.field).string.max_len = 10000];
+  // version is the version the caller last read.
+  int64 version = 4 [(buf.validate.field).int64.gte = 1];
+}
+
+// UpdateNoteResponse returns the updated note.
+message UpdateNoteResponse {
+  // note reflects the persisted update.
+  Note note = 1;
+}
+
+// ListNotesRequest pages with a limit/offset pair kept simple on purpose;
+// switch to cursor pagination when a real listing grows.
+message ListNotesRequest {
+  // limit caps the page size.
+  int32 limit = 1 [(buf.validate.field).int32 = {gte: 1, lte: 100}];
+  // offset skips already-seen rows.
+  int32 offset = 2 [(buf.validate.field).int32.gte = 0];
+}
+
+// ListNotesResponse returns one page of notes.
+message ListNotesResponse {
+  // notes is the page, newest first.
+  repeated Note notes = 1;
+}

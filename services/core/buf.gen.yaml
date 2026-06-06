@@ -1,0 +1,23 @@
+# Code generation for this service's protos. Run `buf generate` to produce Go
+# types + gRPC stubs into internal/gen/proto. Generated code is committed but
+# never hand-edited. Plugins are local binaries installed via `go install`.
+version: v2
+
+# clean wipes the OUTPUT dir before each run. Proto output is scoped to
+# internal/gen/proto so it never clobbers sqlc's output (internal/gen/db):
+# two generators, two disjoint roots.
+clean: true
+
+plugins:
+  # Message structs + (de)serialization.
+  - local: protoc-gen-go
+    out: internal/gen/proto
+    opt:
+      # Mirror the proto directory layout under the out dir.
+      - paths=source_relative
+
+  # gRPC server interfaces + client stubs (plain google.golang.org/grpc).
+  - local: protoc-gen-go-grpc
+    out: internal/gen/proto
+    opt:
+      - paths=source_relative
