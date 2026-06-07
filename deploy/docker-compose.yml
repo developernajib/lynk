@@ -1,0 +1,109 @@
+# Local development stack: infrastructure + both services. Bring up just the
+# infrastructure with:  docker compose up -d postgres redis nats
+# or everything with:   docker compose up -d --build
+#
+# Memory limits keep the stack friendly to a developer laptop; production
+# sizing lives in real deployment manifests, not here.
+name: lynk
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: lynk
+      POSTGRES_PASSWORD: lynk
+      POSTGRES_DB: core_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lynk -d core_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 512m
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 320m
+
+  nats:
+    image: nats:2.10-alpine
+    # JetStream with file storage so events survive container restarts.
+    command: ["-js", "-sd", "/data"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - nats-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 256m
+
+  core:
+    build: ../services/core
+    environment: &core-env
+      APP_ENV: development
+      DB_WRITE_URL: postgres://lynk:lynk@postgres:5432/core_db?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      NATS_URL: nats://nats:4222
+      JWT_ISSUER: lynk
+      LOG_JSON: "true"
+    ports:
+      - "50051:50051"
+      - "9091:9091"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    mem_limit: 256m
+
+  core-worker:
+    build: ../services/core
+    entrypoint: ["/worker"]
+    environment: *core-env
+    ports:
+      - "9191:9191"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    mem_limit: 256m
+
+  gateway:
+    build: ../services/gateway
+    environment:
+      APP_ENV: development
+      REDIS_URL: redis://redis:6379/0
+      UPSTREAM_CORE: core:50051
+      JWT_ISSUER: lynk
+      LOG_JSON: "true"
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      - core
+      - redis
+    mem_limit: 256m
+
+volumes:
+  postgres-data:
+  nats-data:
