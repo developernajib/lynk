@@ -1,0 +1,49 @@
+# CI: per-service build/vet/lint/vuln matrix plus proto lint and breaking-
+# change detection. Services are independent modules, so each matrix entry
+# works inside its own directory.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [core, gateway]
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache-dependency-path: services/${{ matrix.service }}/go.sum
+      - name: Build
+        run: go build ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Vulnerability scan
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+      - name: Lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          working-directory: services/${{ matrix.service }}
+
+  proto:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-action@v1
+        with:
+          input: services/core
+          # Lint always; breaking-change detection compares against main.
+          lint: true
+          breaking: ${{ github.event_name == 'pull_request' }}
+          breaking_against: "https://github.com/${{ github.repository }}.git#branch=main,subdir=services/core"
+          push: false
