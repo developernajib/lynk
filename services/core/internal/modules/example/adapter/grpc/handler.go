@@ -18,6 +18,15 @@ import (
 	"github.com/developernajib/lynk/services/core/internal/platform/auth"
 )
 
+// AccessChecker is the module's view of the ABAC engine, declared here with
+// primitive types so modules never import each other's packages; bootstrap
+// adapts the authz checker onto it.
+type AccessChecker interface {
+	// Allowed evaluates whether the subject may perform action on the
+	// resource described by the attribute map.
+	Allowed(ctx context.Context, subjectID, role, tokenType, resourceType, action string, resource map[string]string) bool
+}
+
 // Handler implements example.v1.ExampleService.
 type Handler struct {
 	examplev1.UnimplementedExampleServiceServer
@@ -26,11 +35,12 @@ type Handler struct {
 	getNote    *application.GetNote
 	updateNote *application.UpdateNote
 	listNotes  *application.ListNotes
+	access     AccessChecker
 }
 
 // NewHandler wires the handler.
-func NewHandler(create *application.CreateNote, get *application.GetNote, update *application.UpdateNote, list *application.ListNotes) *Handler {
-	return &Handler{createNote: create, getNote: get, updateNote: update, listNotes: list}
+func NewHandler(create *application.CreateNote, get *application.GetNote, update *application.UpdateNote, list *application.ListNotes, access AccessChecker) *Handler {
+	return &Handler{createNote: create, getNote: get, updateNote: update, listNotes: list, access: access}
 }
 
 // CreateNote creates a note owned by the authenticated principal.
@@ -62,10 +72,20 @@ func (h *Handler) GetNote(ctx context.Context, req *examplev1.GetNoteRequest) (*
 }
 
 // UpdateNote retitles or rewrites a note under optimistic locking.
+//
+// This RPC is the module's worked ABAC example: the owner-scoped query is
+// the first line of defense (you cannot even address another owner's note),
+// and the policy check is the second, where runtime rules (role suspensions,
+// deny policies) take effect without code changes.
 func (h *Handler) UpdateNote(ctx context.Context, req *examplev1.UpdateNoteRequest) (*examplev1.UpdateNoteResponse, error) {
 	principal, err := requirePrincipal(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if !h.access.Allowed(ctx, principal.UserID, principal.Role, principal.TokenType,
+		"note", "update", map[string]string{"owner_id": principal.UserID}) {
+		return nil, apperror.New(apperror.KindPermissionDenied, "access_denied", "not allowed to update notes")
 	}
 
 	note, err := h.updateNote.Execute(ctx, principal.UserID, req.GetId(), req.GetTitle(), req.GetBody(), req.GetVersion())

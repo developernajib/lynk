@@ -24,6 +24,8 @@ type Dependencies struct {
 	Pools *postgres.Pools
 	Bus   *nats.Connection
 	Log   zerolog.Logger
+	// Access is the ABAC engine adapted onto this module's port.
+	Access exampleadapter.AccessChecker
 }
 
 // Module is the assembled example module.
@@ -46,6 +48,7 @@ func New(deps Dependencies) *Module {
 		application.NewGetNote(notes),
 		application.NewUpdateNote(notes, events, uow, systemClock),
 		application.NewListNotes(notes),
+		deps.Access,
 	)
 
 	return &Module{

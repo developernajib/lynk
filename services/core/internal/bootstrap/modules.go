@@ -63,7 +63,12 @@ func buildModules(
 	}
 
 	return &Modules{
-		Example: example.New(example.Dependencies{Pools: pools, Bus: bus, Log: log}),
+		Example: example.New(example.Dependencies{
+			Pools:  pools,
+			Bus:    bus,
+			Log:    log,
+			Access: abacAccess{checker: authzModule.Checker()},
+		}),
 		Identity: identity.New(identity.Dependencies{
 			Pools:      pools,
 			Bus:        bus,
@@ -134,4 +139,19 @@ func (m *Modules) Runners() []runner {
 // runner is anything that blocks in Run until its context is cancelled.
 type runner interface {
 	Run(ctx context.Context) error
+}
+
+// abacAccess adapts the authz checker onto the modules' primitive-typed
+// AccessChecker ports, keeping modules free of cross-module imports.
+type abacAccess struct {
+	checker *authz.Checker
+}
+
+// Allowed evaluates one access decision.
+func (a abacAccess) Allowed(ctx context.Context, subjectID, role, tokenType, resourceType, action string, resource map[string]string) bool {
+	return a.checker.Decide(ctx, authz.Subject{
+		ID:        subjectID,
+		Role:      role,
+		TokenType: tokenType,
+	}, resourceType, action, resource).Allowed
 }
