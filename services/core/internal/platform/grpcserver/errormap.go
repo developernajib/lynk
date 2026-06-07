@@ -43,10 +43,31 @@ func errorMappingInterceptor() grpc.UnaryServerInterceptor {
 			Str("error.fingerprint", appErr.Fingerprint()).
 			Msg("application error")
 
-		// The status carries only the safe public message.
-		return resp, status.Error(toGRPCCode(appErr.Kind), appErr.Message)
+		// The status carries only the safe public message, but the returned
+		// error still unwraps to the apperror so outer interceptors (the
+		// logger's "already handled?" check) can see it.
+		return resp, &statusError{
+			status: status.New(toGRPCCode(appErr.Kind), appErr.Message),
+			cause:  appErr,
+		}
 	}
 }
+
+// statusError is a gRPC status that preserves its cause. grpc-go reads the
+// code via GRPCStatus; errors.Is/As walk into the original apperror through
+// Unwrap. A plain status.Error would satisfy only the first.
+type statusError struct {
+	status *status.Status
+	cause  error
+}
+
+func (e *statusError) Error() string { return e.status.Err().Error() }
+
+// GRPCStatus is the interface grpc-go uses to extract the wire status.
+func (e *statusError) GRPCStatus() *status.Status { return e.status }
+
+// Unwrap exposes the original application error.
+func (e *statusError) Unwrap() error { return e.cause }
 
 // toGRPCCode maps the transport-agnostic Kind to the closest gRPC code. The
 // translation lives here, at the transport boundary, never in the domain.

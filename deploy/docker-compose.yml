@@ -7,6 +7,10 @@
 name: lynk
 
 services:
+  # Host ports are offset (5433/6380/4223) so the stack coexists with any
+  # resident postgres/redis/nats on the developer machine (WSL distros and
+  # other projects commonly hold the standard ports). In-network addresses
+  # stay standard.
   postgres:
     image: postgres:17-alpine
     environment:
@@ -14,7 +18,7 @@ services:
       POSTGRES_PASSWORD: lynk
       POSTGRES_DB: core_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -28,7 +32,7 @@ services:
     image: redis:7-alpine
     command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
     ports:
-      - "6379:6379"
+      - "6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -41,8 +45,8 @@ services:
     # JetStream with file storage so events survive container restarts.
     command: ["-js", "-sd", "/data"]
     ports:
-      - "4222:4222"
-      - "8222:8222"
+      - "4223:4222"
+      - "8223:8222"
     volumes:
       - nats-data:/data
     healthcheck:

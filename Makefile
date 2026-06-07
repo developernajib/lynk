@@ -3,7 +3,7 @@
 
 SERVICES := core gateway
 MIGRATE  := migrate
-DB_URL   ?= postgres://lynk:lynk@localhost:5432/core_db?sslmode=disable
+DB_URL   ?= postgres://lynk:lynk@127.0.0.1:5433/core_db?sslmode=disable
 
 .PHONY: help build vet lint fmt generate \
         migrate-up migrate-down migrate-status migrate-create db-fresh \
