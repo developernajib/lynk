@@ -169,7 +169,11 @@ func RunServer() error {
 		return err
 	}
 
-	modules := buildModules(f.cfg, f.log, f.pools, f.redis, f.bus)
+	modules, err := buildModules(f.cfg, f.log, f.pools, f.redis, f.bus)
+	if err != nil {
+		f.shutdown.Run()
+		return err
+	}
 	modules.RegisterAll(server.GRPC())
 
 	ops := f.opsServer(f.cfg.App.MetricsPort)

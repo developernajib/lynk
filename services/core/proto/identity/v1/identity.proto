@@ -1,0 +1,124 @@
+// Identity contract: registration, session lifecycle, and account
+// management. Access tokens are short-lived RS256 JWTs verified at the
+// gateway; refresh tokens are opaque, stored hashed, and ROTATE on every
+// use, so a stolen refresh token dies the moment either party uses it.
+syntax = "proto3";
+
+package identity.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/developernajib/lynk/services/core/internal/gen/proto/identity/v1;identityv1";
+
+// IdentityService owns users and their sessions.
+service IdentityService {
+  // Register creates a user account.
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  // Login exchanges credentials for an access + refresh token pair.
+  rpc Login(LoginRequest) returns (LoginResponse);
+  // Refresh rotates a refresh token, revoking the presented one.
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  // Logout revokes the refresh token and blacklists the access token.
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  // GetProfile returns the authenticated user's profile.
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  // ChangePassword re-authenticates, changes the password, and revokes
+  // every session.
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+}
+
+// User is the public profile shape.
+message User {
+  // id is the user's UUIDv7.
+  string id = 1;
+  // email is the login identifier.
+  string email = 2;
+  // full_name is the display name.
+  string full_name = 3;
+  // role is a subject attribute for authorization policies.
+  string role = 4;
+}
+
+// RegisterRequest carries the new account's details.
+message RegisterRequest {
+  // email must be a valid address; stored lowercase.
+  string email = 1 [(buf.validate.field).string.email = true];
+  // password must be 10-200 characters; strength beats composition rules.
+  string password = 2 [(buf.validate.field).string = {min_len: 10, max_len: 200}];
+  // full_name is the display name.
+  string full_name = 3 [(buf.validate.field).string = {min_len: 1, max_len: 200}];
+}
+
+// RegisterResponse returns the created user.
+message RegisterResponse {
+  // user is the new account.
+  User user = 1;
+}
+
+// LoginRequest carries credentials.
+message LoginRequest {
+  // email is the login identifier.
+  string email = 1 [(buf.validate.field).string.email = true];
+  // password is verified against the stored hash.
+  string password = 2 [(buf.validate.field).string = {min_len: 1, max_len: 200}];
+}
+
+// LoginResponse returns the token pair plus the profile, saving the client a
+// second round-trip.
+message LoginResponse {
+  // access_token is the short-lived RS256 JWT.
+  string access_token = 1;
+  // access_token_expires_at is its Unix expiry (seconds).
+  int64 access_token_expires_at = 2;
+  // refresh_token is opaque; present it to Refresh exactly once.
+  string refresh_token = 3;
+  // user is the authenticated profile.
+  User user = 4;
+}
+
+// RefreshRequest presents the current refresh token.
+message RefreshRequest {
+  // refresh_token is consumed and revoked by this call.
+  string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+// RefreshResponse returns a fresh pair.
+message RefreshResponse {
+  // access_token is the new RS256 JWT.
+  string access_token = 1;
+  // access_token_expires_at is its Unix expiry (seconds).
+  int64 access_token_expires_at = 2;
+  // refresh_token replaces the presented one.
+  string refresh_token = 3;
+}
+
+// LogoutRequest ends the session.
+message LogoutRequest {
+  // refresh_token is revoked.
+  string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
+  // access_token_id (jti) is blacklisted until its natural expiry.
+  string access_token_id = 2;
+}
+
+// LogoutResponse is empty; success is the status code.
+message LogoutResponse {}
+
+// GetProfileRequest is empty; identity comes from the verified principal.
+message GetProfileRequest {}
+
+// GetProfileResponse returns the caller's profile.
+message GetProfileResponse {
+  // user is the authenticated profile.
+  User user = 1;
+}
+
+// ChangePasswordRequest re-authenticates with the current password.
+message ChangePasswordRequest {
+  // current_password proves possession before the change.
+  string current_password = 1 [(buf.validate.field).string.min_len = 1];
+  // new_password must be 10-200 characters.
+  string new_password = 2 [(buf.validate.field).string = {min_len: 10, max_len: 200}];
+}
+
+// ChangePasswordResponse is empty; all sessions are revoked on success.
+message ChangePasswordResponse {}

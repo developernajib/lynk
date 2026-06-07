@@ -6,23 +6,39 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	ClaimUnpublishedIdentityOutboxEvents(ctx context.Context, limit int32) ([]ClaimUnpublishedIdentityOutboxEventsRow, error)
 	// The relay claims a batch with FOR UPDATE SKIP LOCKED so multiple worker
 	// replicas never double-publish the same row.
 	ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32) ([]ClaimUnpublishedOutboxEventsRow, error)
 	// Example module queries. sqlc compiles these into type-safe Go under
 	// internal/gen/db; repositories call the generated methods, never raw SQL.
 	CreateNote(ctx context.Context, arg CreateNoteParams) error
+	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) error
+	// Identity module queries.
+	CreateUser(ctx context.Context, arg CreateUserParams) error
 	// Reads are owner-scoped so one user can never address another's note by id.
 	GetNote(ctx context.Context, arg GetNoteParams) (ExampleNote, error)
+	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (IdentityRefreshToken, error)
+	GetUserByEmail(ctx context.Context, email string) (IdentityUser, error)
+	GetUserByID(ctx context.Context, id pgtype.UUID) (IdentityUser, error)
+	InsertIdentityOutboxEvent(ctx context.Context, arg InsertIdentityOutboxEventParams) error
 	InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventParams) error
 	ListNotes(ctx context.Context, arg ListNotesParams) ([]ExampleNote, error)
+	MarkIdentityOutboxEventPublished(ctx context.Context, arg MarkIdentityOutboxEventPublishedParams) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
+	// ChangePassword and security events revoke every live session at once.
+	RevokeAllRefreshTokensForUser(ctx context.Context, arg RevokeAllRefreshTokensForUserParams) error
+	RevokeRefreshToken(ctx context.Context, arg RevokeRefreshTokenParams) error
 	// UpdateNote is version-guarded: :execrows returns the affected-row count so
 	// the repository can turn zero rows into a concurrency conflict.
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (int64, error)
+	// Version-guarded update: zero affected rows = concurrent change.
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (int64, error)
 }
 
 var _ Querier = (*Queries)(nil)

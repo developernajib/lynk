@@ -25,3 +25,32 @@ type ExampleOutbox struct {
 	OccurredAt  pgtype.Timestamptz `json:"occurred_at"`
 	PublishedAt pgtype.Timestamptz `json:"published_at"`
 }
+
+type IdentityOutbox struct {
+	ID          pgtype.UUID        `json:"id"`
+	Subject     string             `json:"subject"`
+	Payload     []byte             `json:"payload"`
+	OccurredAt  pgtype.Timestamptz `json:"occurred_at"`
+	PublishedAt pgtype.Timestamptz `json:"published_at"`
+}
+
+type IdentityRefreshToken struct {
+	ID        pgtype.UUID        `json:"id"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	TokenHash string             `json:"token_hash"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	RevokedAt pgtype.Timestamptz `json:"revoked_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type IdentityUser struct {
+	ID           pgtype.UUID        `json:"id"`
+	Email        string             `json:"email"`
+	PasswordHash string             `json:"password_hash"`
+	FullName     string             `json:"full_name"`
+	Role         string             `json:"role"`
+	Status       string             `json:"status"`
+	Version      int64              `json:"version"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}

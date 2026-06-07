@@ -28,7 +28,11 @@ func RunWorker() error {
 		return err
 	}
 
-	modules := buildModules(f.cfg, f.log, f.pools, f.redis, f.bus)
+	modules, err := buildModules(f.cfg, f.log, f.pools, f.redis, f.bus)
+	if err != nil {
+		f.shutdown.Run()
+		return err
+	}
 
 	// Scheduled jobs: register them here. Every job takes a leader lease by
 	// construction (the jobs package enforces it).
