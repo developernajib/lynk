@@ -1,0 +1,26 @@
+# golangci-lint (v2) config. Hand-written code is linted strictly; generated
+# code (internal/gen: sqlc + buf output) is excluded because it is
+# machine-produced and never hand-edited.
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - ineffassign
+    - unused
+    - misspell
+    - bodyclose
+    - noctx
+    - gosec
+    - errorlint
+    - sqlclosecheck
+    - rowserrcheck
+    - contextcheck
+  exclusions:
+    paths:
+      - internal/gen
