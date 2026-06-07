@@ -47,3 +47,33 @@ jobs:
           breaking: ${{ github.event_name == 'pull_request' }}
           breaking_against: "https://github.com/${{ github.repository }}.git#branch=main,subdir=services/core"
           push: false
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so gitleaks scans every commit, not just the tip.
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [core, gateway]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t lynk-${{ matrix.service }}:ci services/${{ matrix.service }}
+      - name: Scan image
+        uses: aquasecurity/trivy-action@0.31.0
+        with:
+          image-ref: lynk-${{ matrix.service }}:ci
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
