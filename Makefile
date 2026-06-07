@@ -6,7 +6,8 @@ MIGRATE  := migrate
 DB_URL   ?= postgres://lynk:lynk@127.0.0.1:5433/core_db?sslmode=disable
 
 .PHONY: help build vet lint fmt generate \
-        migrate-up migrate-down migrate-status migrate-create db-fresh \
+        dev-core dev-core-worker dev-gateway \
+        migrate-up migrate-down migrate-status migrate-create db-fresh db-seed \
         infra-up infra-down stack-up stack-down hooks
 
 help: ## List available targets
@@ -26,6 +27,16 @@ fmt: ## gofmt every service
 
 generate: ## Regenerate protobuf + sqlc code (core)
 	cd services/core && buf generate && sqlc generate
+
+# Hot reload (one terminal each; install: go install github.com/air-verse/air@latest)
+dev-core: ## Hot-reload the core API server
+	cd services/core && air
+
+dev-core-worker: ## Hot-reload the core worker
+	cd services/core && air -c .air.worker.toml
+
+dev-gateway: ## Hot-reload the gateway
+	cd services/gateway && air
 
 # Database ergonomics (golang-migrate; install with:
 #   go install -tags 'postgres,file' github.com/golang-migrate/migrate/v4/cmd/migrate@latest)

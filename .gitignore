@@ -3,7 +3,8 @@
 *.pem
 
 # Build output
-/bin/
+bin/
+tmp/
 *.exe
 
 # OS / editor noise

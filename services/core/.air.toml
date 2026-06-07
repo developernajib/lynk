@@ -1,0 +1,17 @@
+# Air hot reload for the core API server. Install: go install github.com/air-verse/air@latest
+# The binary keeps a .exe name on every OS: Windows requires it, Unix ignores it.
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o tmp/server.exe ./cmd/server"
+bin = "tmp/server.exe"
+include_ext = ["go", "env"]
+exclude_dir = ["tmp", "bin"]
+stop_on_error = true
+
+[log]
+main_only = true
+
+[misc]
+clean_on_exit = true
