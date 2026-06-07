@@ -24,7 +24,7 @@ func NewCreateNote(notes domain.NoteRepository, events EventPublisher, uow UnitO
 
 // Execute validates input into value objects, builds the aggregate, and
 // persists state + events in ONE transaction (the outbox pattern).
-func (uc *CreateNote) Execute(ctx context.Context, tenantID, ownerID, title, body string) (*domain.Note, error) {
+func (uc *CreateNote) Execute(ctx context.Context, ownerID, title, body string) (*domain.Note, error) {
 	rawID, err := uc.ids.NewID()
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (uc *CreateNote) Execute(ctx context.Context, tenantID, ownerID, title, bod
 		return nil, err
 	}
 
-	note, err := domain.NewNote(noteID, tenantID, ownerID, noteTitle, body, uc.clock.Now())
+	note, err := domain.NewNote(noteID, ownerID, noteTitle, body, uc.clock.Now())
 	if err != nil {
 		return nil, err
 	}

@@ -18,12 +18,12 @@ func NewListNotes(notes domain.NoteRepository) *ListNotes {
 
 // Execute pages the owner's notes, newest first. Limits are clamped here as
 // defense in depth even though protovalidate already bounds them at the edge.
-func (uc *ListNotes) Execute(ctx context.Context, tenantID, ownerID string, limit, offset int32) ([]*domain.Note, error) {
+func (uc *ListNotes) Execute(ctx context.Context, ownerID string, limit, offset int32) ([]*domain.Note, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
 	if offset < 0 {
 		offset = 0
 	}
-	return uc.notes.List(ctx, tenantID, ownerID, limit, offset)
+	return uc.notes.List(ctx, ownerID, limit, offset)
 }

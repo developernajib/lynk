@@ -41,17 +41,16 @@ type Config struct {
 type TokenType string
 
 const (
-	TokenTypeUser       TokenType = "user"       // tenant staff
-	TokenTypeCustomer   TokenType = "customer"   // global customer, no tenant
-	TokenTypeSuperAdmin TokenType = "superadmin" // platform operator
+	TokenTypeUser    TokenType = "user"    // an end user
+	TokenTypeAdmin   TokenType = "admin"   // a platform operator
+	TokenTypeService TokenType = "service" // machine-to-machine (API key)
 )
 
 // Claims is the token payload. Embedding RegisteredClaims provides the
-// standard fields (exp, iat, jti, sub) and their validation.
+// standard fields (exp, iat, jti, sub) and their validation. Role rides along
+// as a subject attribute for the ABAC policy engine.
 type Claims struct {
 	jwtlib.RegisteredClaims
-	TenantID  string    `json:"tenant_id,omitempty"`
-	BranchID  string    `json:"branch_id,omitempty"`
 	Role      string    `json:"role,omitempty"`
 	TokenType TokenType `json:"token_type"`
 }

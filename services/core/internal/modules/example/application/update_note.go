@@ -23,7 +23,7 @@ func NewUpdateNote(notes domain.NoteRepository, events EventPublisher, uow UnitO
 // Execute re-reads the aggregate, applies the change, and saves guarded by
 // the version the CALLER last saw: if another writer bumped it since, the
 // repository reports domain.ErrConcurrentUpdate instead of overwriting.
-func (uc *UpdateNote) Execute(ctx context.Context, tenantID, id, title, body string, version int64) (*domain.Note, error) {
+func (uc *UpdateNote) Execute(ctx context.Context, ownerID, id, title, body string, version int64) (*domain.Note, error) {
 	noteID, err := vo.NewNoteID(id)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (uc *UpdateNote) Execute(ctx context.Context, tenantID, id, title, body str
 
 	var updated *domain.Note
 	err = uc.uow.WithinTransaction(ctx, func(ctx context.Context) error {
-		note, err := uc.notes.Get(ctx, tenantID, noteID)
+		note, err := uc.notes.Get(ctx, ownerID, noteID)
 		if err != nil {
 			return err
 		}

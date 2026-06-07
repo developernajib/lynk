@@ -17,11 +17,11 @@ func NewGetNote(notes domain.NoteRepository) *GetNote {
 	return &GetNote{notes: notes}
 }
 
-// Execute loads one note scoped to the caller's tenant.
-func (uc *GetNote) Execute(ctx context.Context, tenantID, id string) (*domain.Note, error) {
+// Execute loads one note scoped to its owner.
+func (uc *GetNote) Execute(ctx context.Context, ownerID, id string) (*domain.Note, error) {
 	noteID, err := vo.NewNoteID(id)
 	if err != nil {
 		return nil, err
 	}
-	return uc.notes.Get(ctx, tenantID, noteID)
+	return uc.notes.Get(ctx, ownerID, noteID)
 }

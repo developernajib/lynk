@@ -40,7 +40,7 @@ func (h *Handler) CreateNote(ctx context.Context, req *examplev1.CreateNoteReque
 		return nil, err
 	}
 
-	note, err := h.createNote.Execute(ctx, tenantOf(principal), principal.UserID, req.GetTitle(), req.GetBody())
+	note, err := h.createNote.Execute(ctx, principal.UserID, req.GetTitle(), req.GetBody())
 	if err != nil {
 		return nil, classify(err)
 	}
@@ -54,7 +54,7 @@ func (h *Handler) GetNote(ctx context.Context, req *examplev1.GetNoteRequest) (*
 		return nil, err
 	}
 
-	note, err := h.getNote.Execute(ctx, tenantOf(principal), req.GetId())
+	note, err := h.getNote.Execute(ctx, principal.UserID, req.GetId())
 	if err != nil {
 		return nil, classify(err)
 	}
@@ -68,7 +68,7 @@ func (h *Handler) UpdateNote(ctx context.Context, req *examplev1.UpdateNoteReque
 		return nil, err
 	}
 
-	note, err := h.updateNote.Execute(ctx, tenantOf(principal), req.GetId(), req.GetTitle(), req.GetBody(), req.GetVersion())
+	note, err := h.updateNote.Execute(ctx, principal.UserID, req.GetId(), req.GetTitle(), req.GetBody(), req.GetVersion())
 	if err != nil {
 		return nil, classify(err)
 	}
@@ -82,7 +82,7 @@ func (h *Handler) ListNotes(ctx context.Context, req *examplev1.ListNotesRequest
 		return nil, err
 	}
 
-	notes, err := h.listNotes.Execute(ctx, tenantOf(principal), principal.UserID, req.GetLimit(), req.GetOffset())
+	notes, err := h.listNotes.Execute(ctx, principal.UserID, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		return nil, classify(err)
 	}
@@ -102,16 +102,6 @@ func requirePrincipal(ctx context.Context) (auth.Principal, error) {
 		return auth.Principal{}, apperror.New(apperror.KindUnauthenticated, "unauthenticated", "authentication required")
 	}
 	return principal, nil
-}
-
-// tenantOf scopes data to the caller's tenant. Customers and superadmins
-// carry no tenant; the example uses a shared scope for them, a simplification
-// a real module replaces with its own rule.
-func tenantOf(p auth.Principal) string {
-	if p.TenantID == "" {
-		return "global"
-	}
-	return p.TenantID
 }
 
 // classify maps domain sentinels onto transport-agnostic kinds, in exactly

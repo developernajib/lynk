@@ -56,13 +56,12 @@ func (q *Queries) ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32)
 
 const createNote = `-- name: CreateNote :exec
 
-INSERT INTO example.notes (id, tenant_id, owner_id, title, body, version, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO example.notes (id, owner_id, title, body, version, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 `
 
 type CreateNoteParams struct {
 	ID        pgtype.UUID        `json:"id"`
-	TenantID  string             `json:"tenant_id"`
 	OwnerID   string             `json:"owner_id"`
 	Title     string             `json:"title"`
 	Body      string             `json:"body"`
@@ -76,7 +75,6 @@ type CreateNoteParams struct {
 func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) error {
 	_, err := q.db.Exec(ctx, createNote,
 		arg.ID,
-		arg.TenantID,
 		arg.OwnerID,
 		arg.Title,
 		arg.Body,
@@ -88,22 +86,22 @@ func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) error {
 }
 
 const getNote = `-- name: GetNote :one
-SELECT id, tenant_id, owner_id, title, body, version, created_at, updated_at
+SELECT id, owner_id, title, body, version, created_at, updated_at
 FROM example.notes
-WHERE id = $1 AND tenant_id = $2
+WHERE id = $1 AND owner_id = $2
 `
 
 type GetNoteParams struct {
-	ID       pgtype.UUID `json:"id"`
-	TenantID string      `json:"tenant_id"`
+	ID      pgtype.UUID `json:"id"`
+	OwnerID string      `json:"owner_id"`
 }
 
+// Reads are owner-scoped so one user can never address another's note by id.
 func (q *Queries) GetNote(ctx context.Context, arg GetNoteParams) (ExampleNote, error) {
-	row := q.db.QueryRow(ctx, getNote, arg.ID, arg.TenantID)
+	row := q.db.QueryRow(ctx, getNote, arg.ID, arg.OwnerID)
 	var i ExampleNote
 	err := row.Scan(
 		&i.ID,
-		&i.TenantID,
 		&i.OwnerID,
 		&i.Title,
 		&i.Body,
@@ -137,27 +135,21 @@ func (q *Queries) InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventPa
 }
 
 const listNotes = `-- name: ListNotes :many
-SELECT id, tenant_id, owner_id, title, body, version, created_at, updated_at
+SELECT id, owner_id, title, body, version, created_at, updated_at
 FROM example.notes
-WHERE tenant_id = $1 AND owner_id = $2
+WHERE owner_id = $1
 ORDER BY created_at DESC
-LIMIT $3 OFFSET $4
+LIMIT $2 OFFSET $3
 `
 
 type ListNotesParams struct {
-	TenantID string `json:"tenant_id"`
-	OwnerID  string `json:"owner_id"`
-	Limit    int32  `json:"limit"`
-	Offset   int32  `json:"offset"`
+	OwnerID string `json:"owner_id"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
 }
 
 func (q *Queries) ListNotes(ctx context.Context, arg ListNotesParams) ([]ExampleNote, error) {
-	rows, err := q.db.Query(ctx, listNotes,
-		arg.TenantID,
-		arg.OwnerID,
-		arg.Limit,
-		arg.Offset,
-	)
+	rows, err := q.db.Query(ctx, listNotes, arg.OwnerID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +159,6 @@ func (q *Queries) ListNotes(ctx context.Context, arg ListNotesParams) ([]Example
 		var i ExampleNote
 		if err := rows.Scan(
 			&i.ID,
-			&i.TenantID,
 			&i.OwnerID,
 			&i.Title,
 			&i.Body,
@@ -204,12 +195,12 @@ func (q *Queries) MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEv
 const updateNote = `-- name: UpdateNote :execrows
 UPDATE example.notes
 SET title = $3, body = $4, version = version + 1, updated_at = $5
-WHERE id = $1 AND tenant_id = $2 AND version = $6
+WHERE id = $1 AND owner_id = $2 AND version = $6
 `
 
 type UpdateNoteParams struct {
 	ID        pgtype.UUID        `json:"id"`
-	TenantID  string             `json:"tenant_id"`
+	OwnerID   string             `json:"owner_id"`
 	Title     string             `json:"title"`
 	Body      string             `json:"body"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
@@ -221,7 +212,7 @@ type UpdateNoteParams struct {
 func (q *Queries) UpdateNote(ctx context.Context, arg UpdateNoteParams) (int64, error) {
 	result, err := q.db.Exec(ctx, updateNote,
 		arg.ID,
-		arg.TenantID,
+		arg.OwnerID,
 		arg.Title,
 		arg.Body,
 		arg.UpdatedAt,

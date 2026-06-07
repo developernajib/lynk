@@ -13,7 +13,6 @@ type Event interface {
 // NoteCreated is raised once per new note.
 type NoteCreated struct {
 	NoteID     string
-	TenantID   string
 	OwnerID    string
 	Title      string
 	Body       string
@@ -26,7 +25,6 @@ func (NoteCreated) Subject() string { return "example.note.created" }
 // NoteUpdated is raised on every successful update.
 type NoteUpdated struct {
 	NoteID     string
-	TenantID   string
 	Title      string
 	Body       string
 	Version    int64

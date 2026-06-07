@@ -53,7 +53,6 @@ func (r *NoteRepository) Create(ctx context.Context, note *domain.Note) error {
 	}
 	err = r.writeQuerier(ctx).CreateNote(ctx, db.CreateNoteParams{
 		ID:        id,
-		TenantID:  note.TenantID(),
 		OwnerID:   note.OwnerID(),
 		Title:     note.Title().String(),
 		Body:      note.Body(),
@@ -67,13 +66,13 @@ func (r *NoteRepository) Create(ctx context.Context, note *domain.Note) error {
 	return nil
 }
 
-// Get loads one note within a tenant.
-func (r *NoteRepository) Get(ctx context.Context, tenantID string, id vo.NoteID) (*domain.Note, error) {
+// Get loads one of the owner's notes.
+func (r *NoteRepository) Get(ctx context.Context, ownerID string, id vo.NoteID) (*domain.Note, error) {
 	pgID, err := uuidFromString(id.String())
 	if err != nil {
 		return nil, err
 	}
-	row, err := r.readQuerier(ctx).GetNote(ctx, db.GetNoteParams{ID: pgID, TenantID: tenantID})
+	row, err := r.readQuerier(ctx).GetNote(ctx, db.GetNoteParams{ID: pgID, OwnerID: ownerID})
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, domain.ErrNoteNotFound
 	}
@@ -92,7 +91,7 @@ func (r *NoteRepository) Update(ctx context.Context, note *domain.Note) error {
 	}
 	affected, err := r.writeQuerier(ctx).UpdateNote(ctx, db.UpdateNoteParams{
 		ID:        id,
-		TenantID:  note.TenantID(),
+		OwnerID:   note.OwnerID(),
 		Title:     note.Title().String(),
 		Body:      note.Body(),
 		UpdatedAt: pgtype.Timestamptz{Time: note.UpdatedAt(), Valid: true},
@@ -108,12 +107,11 @@ func (r *NoteRepository) Update(ctx context.Context, note *domain.Note) error {
 }
 
 // List pages an owner's notes, newest first, from a replica.
-func (r *NoteRepository) List(ctx context.Context, tenantID, ownerID string, limit, offset int32) ([]*domain.Note, error) {
+func (r *NoteRepository) List(ctx context.Context, ownerID string, limit, offset int32) ([]*domain.Note, error) {
 	rows, err := r.readQuerier(ctx).ListNotes(ctx, db.ListNotesParams{
-		TenantID: tenantID,
-		OwnerID:  ownerID,
-		Limit:    limit,
-		Offset:   offset,
+		OwnerID: ownerID,
+		Limit:   limit,
+		Offset:  offset,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("example: list notes: %w", err)
@@ -142,7 +140,7 @@ func noteFromRow(row db.ExampleNote) (*domain.Note, error) {
 		return nil, fmt.Errorf("example: corrupt note title: %w", err)
 	}
 	return domain.NoteFromState(
-		id, row.TenantID, row.OwnerID, title, row.Body,
+		id, row.OwnerID, title, row.Body,
 		row.Version, row.CreatedAt.Time, row.UpdatedAt.Time,
 	), nil
 }

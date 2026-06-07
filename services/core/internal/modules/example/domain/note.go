@@ -7,16 +7,15 @@ import (
 	"github.com/developernajib/lynk/services/core/internal/modules/example/domain/vo"
 )
 
-// ErrMissingOwner guards the aggregate invariant that every note belongs to
-// a tenant and an owner.
-var ErrMissingOwner = errors.New("note requires tenant and owner")
+// ErrMissingOwner guards the aggregate invariant that every note has an
+// owner.
+var ErrMissingOwner = errors.New("note requires an owner")
 
 // Note is the aggregate root. Fields are private so every mutation goes
 // through a method that maintains invariants and records events; state can
 // never be poked into an invalid shape from outside.
 type Note struct {
 	id        vo.NoteID
-	tenantID  string
 	ownerID   string
 	title     vo.Title
 	body      string
@@ -30,14 +29,13 @@ type Note struct {
 // NewNote is the validating factory for a brand-new note. It records the
 // NoteCreated event; persistence publishes it through the outbox in the same
 // transaction.
-func NewNote(id vo.NoteID, tenantID, ownerID string, title vo.Title, body string, now time.Time) (*Note, error) {
-	if tenantID == "" || ownerID == "" {
+func NewNote(id vo.NoteID, ownerID string, title vo.Title, body string, now time.Time) (*Note, error) {
+	if ownerID == "" {
 		return nil, ErrMissingOwner
 	}
 
 	note := &Note{
 		id:        id,
-		tenantID:  tenantID,
 		ownerID:   ownerID,
 		title:     title,
 		body:      body,
@@ -47,7 +45,6 @@ func NewNote(id vo.NoteID, tenantID, ownerID string, title vo.Title, body string
 	}
 	note.events = append(note.events, NoteCreated{
 		NoteID:     id.String(),
-		TenantID:   tenantID,
 		OwnerID:    ownerID,
 		Title:      title.String(),
 		Body:       body,
@@ -59,10 +56,9 @@ func NewNote(id vo.NoteID, tenantID, ownerID string, title vo.Title, body string
 // NoteFromState rehydrates a note loaded from storage. It deliberately skips
 // validation and raises no events: the stored state was validated when it
 // was written, and loading is not a domain fact.
-func NoteFromState(id vo.NoteID, tenantID, ownerID string, title vo.Title, body string, version int64, createdAt, updatedAt time.Time) *Note {
+func NoteFromState(id vo.NoteID, ownerID string, title vo.Title, body string, version int64, createdAt, updatedAt time.Time) *Note {
 	return &Note{
 		id:        id,
-		tenantID:  tenantID,
 		ownerID:   ownerID,
 		title:     title,
 		body:      body,
@@ -81,7 +77,6 @@ func (n *Note) Update(title vo.Title, body string, now time.Time) {
 	n.updatedAt = now
 	n.events = append(n.events, NoteUpdated{
 		NoteID:     n.id.String(),
-		TenantID:   n.tenantID,
 		Title:      title.String(),
 		Body:       body,
 		Version:    n.version + 1,
@@ -99,9 +94,6 @@ func (n *Note) PullEvents() []Event {
 
 // ID returns the note id.
 func (n *Note) ID() vo.NoteID { return n.id }
-
-// TenantID returns the owning tenant.
-func (n *Note) TenantID() string { return n.tenantID }
 
 // OwnerID returns the owning user.
 func (n *Note) OwnerID() string { return n.ownerID }

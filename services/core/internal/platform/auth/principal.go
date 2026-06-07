@@ -12,20 +12,16 @@ package auth
 
 import "context"
 
-// Principal is the authenticated caller's identity for one request, typed so
-// authorization retrieves every field it needs in one lookup.
+// Principal is the authenticated caller's identity for one request. Its
+// fields are the SUBJECT ATTRIBUTES the ABAC policy engine evaluates;
+// always derived from the verified token or trusted header, never from
+// client-supplied request fields.
 type Principal struct {
-	// UserID is the subject: staff user, customer, or superadmin id.
+	// UserID is the subject id.
 	UserID string
-	// TenantID scopes the caller to one tenant. Always derived from the
-	// verified token or trusted header, never from client-supplied request
-	// fields; row-level security enforces it again at the database.
-	TenantID string
-	// BranchID optionally restricts a staff user to one branch ("" = all).
-	BranchID string
-	// Role is the RBAC role name used for permission checks.
+	// Role is a subject attribute for policy decisions (e.g. "admin").
 	Role string
-	// TokenType is "user", "customer", or "superadmin".
+	// TokenType is "user", "admin", or "service".
 	TokenType string
 }
 

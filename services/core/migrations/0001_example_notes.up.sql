@@ -4,7 +4,6 @@ CREATE SCHEMA IF NOT EXISTS example;
 
 CREATE TABLE example.notes (
     id          UUID PRIMARY KEY,
-    tenant_id   TEXT        NOT NULL,
     owner_id    TEXT        NOT NULL,
     title       TEXT        NOT NULL,
     body        TEXT        NOT NULL DEFAULT '',
@@ -16,8 +15,8 @@ CREATE TABLE example.notes (
 );
 
 -- Composite index matching the list query's WHERE + ORDER BY.
-CREATE INDEX notes_tenant_owner_created_idx
-    ON example.notes (tenant_id, owner_id, created_at DESC);
+CREATE INDEX notes_owner_created_idx
+    ON example.notes (owner_id, created_at DESC);
 
 -- Transactional outbox: events are inserted in the SAME transaction as the
 -- state change they describe, then relayed to the bus by the worker. This is

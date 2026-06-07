@@ -15,8 +15,6 @@ import (
 // gRPC canonicalizes metadata keys.
 const (
 	headerUserID    = "x-user-id"
-	headerTenantID  = "x-tenant-id"
-	headerBranchID  = "x-branch-id"
 	headerRole      = "x-role"
 	headerTokenType = "x-token-type"
 )
@@ -50,8 +48,6 @@ func VerifyTokenInterceptor(verifier *jwt.Verifier) grpc.UnaryServerInterceptor 
 
 		p := Principal{
 			UserID:    claims.Subject,
-			TenantID:  claims.TenantID,
-			BranchID:  claims.BranchID,
 			Role:      claims.Role,
 			TokenType: string(claims.TokenType),
 		}
@@ -113,8 +109,6 @@ func withPrincipalFromMetadata(ctx context.Context) context.Context {
 
 	return IntoContext(ctx, Principal{
 		UserID:    userID,
-		TenantID:  firstValue(md, headerTenantID),
-		BranchID:  firstValue(md, headerBranchID),
 		Role:      firstValue(md, headerRole),
 		TokenType: firstValue(md, headerTokenType),
 	})

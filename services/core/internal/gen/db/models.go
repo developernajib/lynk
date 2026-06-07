@@ -10,7 +10,6 @@ import (
 
 type ExampleNote struct {
 	ID        pgtype.UUID        `json:"id"`
-	TenantID  string             `json:"tenant_id"`
 	OwnerID   string             `json:"owner_id"`
 	Title     string             `json:"title"`
 	Body      string             `json:"body"`
