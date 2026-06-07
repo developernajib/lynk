@@ -30,6 +30,7 @@ const (
 	IdentityService_Logout_FullMethodName         = "/identity.v1.IdentityService/Logout"
 	IdentityService_GetProfile_FullMethodName     = "/identity.v1.IdentityService/GetProfile"
 	IdentityService_ChangePassword_FullMethodName = "/identity.v1.IdentityService/ChangePassword"
+	IdentityService_SetUserRole_FullMethodName    = "/identity.v1.IdentityService/SetUserRole"
 )
 
 // IdentityServiceClient is the client API for IdentityService service.
@@ -51,6 +52,8 @@ type IdentityServiceClient interface {
 	// ChangePassword re-authenticates, changes the password, and revokes
 	// every session.
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
+	// SetUserRole changes a user's role attribute (admin only).
+	SetUserRole(ctx context.Context, in *SetUserRoleRequest, opts ...grpc.CallOption) (*SetUserRoleResponse, error)
 }
 
 type identityServiceClient struct {
@@ -121,6 +124,16 @@ func (c *identityServiceClient) ChangePassword(ctx context.Context, in *ChangePa
 	return out, nil
 }
 
+func (c *identityServiceClient) SetUserRole(ctx context.Context, in *SetUserRoleRequest, opts ...grpc.CallOption) (*SetUserRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetUserRoleResponse)
+	err := c.cc.Invoke(ctx, IdentityService_SetUserRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IdentityServiceServer is the server API for IdentityService service.
 // All implementations must embed UnimplementedIdentityServiceServer
 // for forward compatibility.
@@ -140,6 +153,8 @@ type IdentityServiceServer interface {
 	// ChangePassword re-authenticates, changes the password, and revokes
 	// every session.
 	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
+	// SetUserRole changes a user's role attribute (admin only).
+	SetUserRole(context.Context, *SetUserRoleRequest) (*SetUserRoleResponse, error)
 	mustEmbedUnimplementedIdentityServiceServer()
 }
 
@@ -167,6 +182,9 @@ func (UnimplementedIdentityServiceServer) GetProfile(context.Context, *GetProfil
 }
 func (UnimplementedIdentityServiceServer) ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ChangePassword not implemented")
+}
+func (UnimplementedIdentityServiceServer) SetUserRole(context.Context, *SetUserRoleRequest) (*SetUserRoleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetUserRole not implemented")
 }
 func (UnimplementedIdentityServiceServer) mustEmbedUnimplementedIdentityServiceServer() {}
 func (UnimplementedIdentityServiceServer) testEmbeddedByValue()                         {}
@@ -297,6 +315,24 @@ func _IdentityService_ChangePassword_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IdentityService_SetUserRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetUserRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).SetUserRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityService_SetUserRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).SetUserRole(ctx, req.(*SetUserRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IdentityService_ServiceDesc is the grpc.ServiceDesc for IdentityService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -327,6 +363,10 @@ var IdentityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ChangePassword",
 			Handler:    _IdentityService_ChangePassword_Handler,
+		},
+		{
+			MethodName: "SetUserRole",
+			Handler:    _IdentityService_SetUserRole_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

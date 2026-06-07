@@ -38,6 +38,8 @@ type Querier interface {
 	// ChangePassword and security events revoke every live session at once.
 	RevokeAllRefreshTokensForUser(ctx context.Context, arg RevokeAllRefreshTokensForUserParams) error
 	RevokeRefreshToken(ctx context.Context, arg RevokeRefreshTokenParams) error
+	// Used by the seeder for idempotent admin promotion.
+	SetUserRoleByEmail(ctx context.Context, arg SetUserRoleByEmailParams) (int64, error)
 	// UpdateNote is version-guarded: :execrows returns the affected-row count so
 	// the repository can turn zero rows into a concurrency conflict.
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (int64, error)

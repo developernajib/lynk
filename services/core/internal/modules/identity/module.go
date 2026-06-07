@@ -62,6 +62,7 @@ func New(deps Dependencies) *Module {
 		application.NewLogout(sessions, opaque, blacklist, systemClock, deps.AccessTTL),
 		application.NewGetProfile(users),
 		application.NewChangePassword(users, sessions, hasher, events, uow, systemClock),
+		application.NewSetUserRole(users, events, uow, systemClock),
 	)
 
 	return &Module{

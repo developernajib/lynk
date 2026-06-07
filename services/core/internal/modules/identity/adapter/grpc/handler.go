@@ -23,6 +23,7 @@ type Handler struct {
 	logout         *application.Logout
 	getProfile     *application.GetProfile
 	changePassword *application.ChangePassword
+	setUserRole    *application.SetUserRole
 }
 
 // NewHandler wires the handler.
@@ -33,6 +34,7 @@ func NewHandler(
 	logout *application.Logout,
 	getProfile *application.GetProfile,
 	changePassword *application.ChangePassword,
+	setUserRole *application.SetUserRole,
 ) *Handler {
 	return &Handler{
 		register:       register,
@@ -41,6 +43,7 @@ func NewHandler(
 		logout:         logout,
 		getProfile:     getProfile,
 		changePassword: changePassword,
+		setUserRole:    setUserRole,
 	}
 }
 
@@ -113,6 +116,24 @@ func (h *Handler) ChangePassword(ctx context.Context, req *identityv1.ChangePass
 	return &identityv1.ChangePasswordResponse{}, nil
 }
 
+// SetUserRole reassigns a user's role. Admin-only in code: role assignment
+// IS granting access, so it must not depend on editable policies.
+func (h *Handler) SetUserRole(ctx context.Context, req *identityv1.SetUserRoleRequest) (*identityv1.SetUserRoleResponse, error) {
+	principal, err := requirePrincipal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if principal.Role != "admin" && principal.TokenType != "admin" {
+		return nil, apperror.New(apperror.KindPermissionDenied, "admin_required", "admin access required")
+	}
+
+	user, err := h.setUserRole.Execute(ctx, req.GetUserId(), req.GetRole())
+	if err != nil {
+		return nil, classify(err)
+	}
+	return &identityv1.SetUserRoleResponse{User: toProtoUser(user)}, nil
+}
+
 func requirePrincipal(ctx context.Context) (auth.Principal, error) {
 	principal, ok := auth.FromContext(ctx)
 	if !ok {
@@ -137,7 +158,7 @@ func classify(err error) error {
 		return apperror.Wrap(err, apperror.KindNotFound, "user_not_found", "user not found")
 	case errors.Is(err, domain.ErrConcurrentUpdate):
 		return apperror.Wrap(err, apperror.KindConflict, "user_conflict", "account was modified concurrently, retry")
-	case errors.Is(err, vo.ErrInvalidEmail), errors.Is(err, vo.ErrInvalidUserID), errors.Is(err, domain.ErrMissingName):
+	case errors.Is(err, vo.ErrInvalidEmail), errors.Is(err, vo.ErrInvalidUserID), errors.Is(err, domain.ErrMissingName), errors.Is(err, domain.ErrInvalidRole):
 		return apperror.Wrap(err, apperror.KindInvalidInput, "invalid_input", err.Error())
 	default:
 		return apperror.Wrap(err, apperror.KindInternal, "internal", "internal error")

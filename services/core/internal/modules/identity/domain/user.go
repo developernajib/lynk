@@ -20,6 +20,10 @@ const (
 // ErrMissingName guards the display-name invariant.
 var ErrMissingName = errors.New("user requires a name")
 
+// ErrInvalidRole rejects empty or oversized role names. Roles are an open
+// set on purpose: ABAC policies give meaning to role strings at runtime.
+var ErrInvalidRole = errors.New("role must be 1-50 characters")
+
 // User is the aggregate root. The password hash lives here as an opaque
 // string: HOW it is hashed is infrastructure; THAT a user has exactly one
 // credential is domain.
@@ -88,6 +92,17 @@ func (u *User) ChangePassword(newHash string, now time.Time) {
 	u.passwordHash = newHash
 	u.updatedAt = now
 	u.events = append(u.events, PasswordChanged{UserID: u.id.String(), OccurredAt: now})
+}
+
+// ChangeRole assigns a new role attribute and records the security event.
+func (u *User) ChangeRole(role string, now time.Time) error {
+	if role == "" || len(role) > 50 {
+		return ErrInvalidRole
+	}
+	u.role = role
+	u.updatedAt = now
+	u.events = append(u.events, RoleChanged{UserID: u.id.String(), Role: role, OccurredAt: now})
+	return nil
 }
 
 // PullEvents returns and clears recorded events after a successful save.

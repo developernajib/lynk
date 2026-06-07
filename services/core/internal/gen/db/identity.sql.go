@@ -247,6 +247,27 @@ func (q *Queries) RevokeRefreshToken(ctx context.Context, arg RevokeRefreshToken
 	return err
 }
 
+const setUserRoleByEmail = `-- name: SetUserRoleByEmail :execrows
+UPDATE identity.users
+SET role = $2, version = version + 1, updated_at = $3
+WHERE email = $1
+`
+
+type SetUserRoleByEmailParams struct {
+	Email     string             `json:"email"`
+	Role      string             `json:"role"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+// Used by the seeder for idempotent admin promotion.
+func (q *Queries) SetUserRoleByEmail(ctx context.Context, arg SetUserRoleByEmailParams) (int64, error) {
+	result, err := q.db.Exec(ctx, setUserRoleByEmail, arg.Email, arg.Role, arg.UpdatedAt)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const updateUser = `-- name: UpdateUser :execrows
 UPDATE identity.users
 SET password_hash = $2, full_name = $3, role = $4, status = $5,

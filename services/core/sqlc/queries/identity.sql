@@ -41,6 +41,12 @@ UPDATE identity.refresh_tokens
 SET revoked_at = $2
 WHERE user_id = $1 AND revoked_at IS NULL;
 
+-- Used by the seeder for idempotent admin promotion.
+-- name: SetUserRoleByEmail :execrows
+UPDATE identity.users
+SET role = $2, version = version + 1, updated_at = $3
+WHERE email = $1;
+
 -- name: InsertIdentityOutboxEvent :exec
 INSERT INTO identity.outbox (id, subject, payload, occurred_at)
 VALUES ($1, $2, $3, $4);

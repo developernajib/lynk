@@ -45,6 +45,9 @@ db-fresh: ## Drop everything and re-apply all migrations (DESTRUCTIVE, dev only)
 	$(MIGRATE) -path services/core/migrations -database "$(DB_URL)" drop -f
 	$(MIGRATE) -path services/core/migrations -database "$(DB_URL)" up
 
+db-seed: ## Create the development admin account (idempotent)
+	cd services/core && go run ./cmd/seed
+
 infra-up: ## Start postgres + redis + nats only
 	cd deploy && docker compose up -d postgres redis nats
 

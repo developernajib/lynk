@@ -32,3 +32,14 @@ type PasswordChanged struct {
 
 // Subject implements Event.
 func (PasswordChanged) Subject() string { return "identity.user.password_changed" }
+
+// RoleChanged is raised when an admin reassigns a user's role, a
+// security-relevant fact the audit ledger must capture.
+type RoleChanged struct {
+	UserID     string
+	Role       string
+	OccurredAt time.Time
+}
+
+// Subject implements Event.
+func (RoleChanged) Subject() string { return "identity.user.role_changed" }

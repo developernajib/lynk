@@ -25,6 +25,8 @@ service IdentityService {
   // ChangePassword re-authenticates, changes the password, and revokes
   // every session.
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  // SetUserRole changes a user's role attribute (admin only).
+  rpc SetUserRole(SetUserRoleRequest) returns (SetUserRoleResponse);
 }
 
 // User is the public profile shape.
@@ -122,3 +124,17 @@ message ChangePasswordRequest {
 
 // ChangePasswordResponse is empty; all sessions are revoked on success.
 message ChangePasswordResponse {}
+
+// SetUserRoleRequest names the user and the role to assign.
+message SetUserRoleRequest {
+  // user_id is the target user's UUID.
+  string user_id = 1 [(buf.validate.field).string.uuid = true];
+  // role is the new role attribute, e.g. "admin" or "user".
+  string role = 2 [(buf.validate.field).string = {min_len: 1, max_len: 50}];
+}
+
+// SetUserRoleResponse returns the updated user.
+message SetUserRoleResponse {
+  // user reflects the new role.
+  User user = 1;
+}

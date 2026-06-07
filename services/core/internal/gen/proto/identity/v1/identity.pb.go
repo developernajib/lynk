@@ -716,6 +716,107 @@ func (*ChangePasswordResponse) Descriptor() ([]byte, []int) {
 	return file_identity_v1_identity_proto_rawDescGZIP(), []int{12}
 }
 
+// SetUserRoleRequest names the user and the role to assign.
+type SetUserRoleRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// user_id is the target user's UUID.
+	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// role is the new role attribute, e.g. "admin" or "user".
+	Role          string `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetUserRoleRequest) Reset() {
+	*x = SetUserRoleRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetUserRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetUserRoleRequest) ProtoMessage() {}
+
+func (x *SetUserRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetUserRoleRequest.ProtoReflect.Descriptor instead.
+func (*SetUserRoleRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SetUserRoleRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *SetUserRoleRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+// SetUserRoleResponse returns the updated user.
+type SetUserRoleResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// user reflects the new role.
+	User          *User `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetUserRoleResponse) Reset() {
+	*x = SetUserRoleResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetUserRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetUserRoleResponse) ProtoMessage() {}
+
+func (x *SetUserRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetUserRoleResponse.ProtoReflect.Descriptor instead.
+func (*SetUserRoleResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *SetUserRoleResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 var File_identity_v1_identity_proto protoreflect.FileDescriptor
 
 const file_identity_v1_identity_proto_rawDesc = "" +
@@ -762,7 +863,12 @@ const file_identity_v1_identity_proto_rawDesc = "" +
 	"\fnew_password\x18\x02 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\n" +
 	"\x18\xc8\x01R\vnewPassword\"\x18\n" +
-	"\x16ChangePasswordResponse2\xcd\x03\n" +
+	"\x16ChangePasswordResponse\"V\n" +
+	"\x12SetUserRoleRequest\x12!\n" +
+	"\auser_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x12\x1d\n" +
+	"\x04role\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x182R\x04role\"<\n" +
+	"\x13SetUserRoleResponse\x12%\n" +
+	"\x04user\x18\x01 \x01(\v2\x11.identity.v1.UserR\x04user2\x9f\x04\n" +
 	"\x0fIdentityService\x12G\n" +
 	"\bRegister\x12\x1c.identity.v1.RegisterRequest\x1a\x1d.identity.v1.RegisterResponse\x12>\n" +
 	"\x05Login\x12\x19.identity.v1.LoginRequest\x1a\x1a.identity.v1.LoginResponse\x12D\n" +
@@ -770,7 +876,8 @@ const file_identity_v1_identity_proto_rawDesc = "" +
 	"\x06Logout\x12\x1a.identity.v1.LogoutRequest\x1a\x1b.identity.v1.LogoutResponse\x12M\n" +
 	"\n" +
 	"GetProfile\x12\x1e.identity.v1.GetProfileRequest\x1a\x1f.identity.v1.GetProfileResponse\x12Y\n" +
-	"\x0eChangePassword\x12\".identity.v1.ChangePasswordRequest\x1a#.identity.v1.ChangePasswordResponseBXZVgithub.com/developernajib/lynk/services/core/internal/gen/proto/identity/v1;identityv1b\x06proto3"
+	"\x0eChangePassword\x12\".identity.v1.ChangePasswordRequest\x1a#.identity.v1.ChangePasswordResponse\x12P\n" +
+	"\vSetUserRole\x12\x1f.identity.v1.SetUserRoleRequest\x1a .identity.v1.SetUserRoleResponseBXZVgithub.com/developernajib/lynk/services/core/internal/gen/proto/identity/v1;identityv1b\x06proto3"
 
 var (
 	file_identity_v1_identity_proto_rawDescOnce sync.Once
@@ -784,7 +891,7 @@ func file_identity_v1_identity_proto_rawDescGZIP() []byte {
 	return file_identity_v1_identity_proto_rawDescData
 }
 
-var file_identity_v1_identity_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_identity_v1_identity_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_identity_v1_identity_proto_goTypes = []any{
 	(*User)(nil),                   // 0: identity.v1.User
 	(*RegisterRequest)(nil),        // 1: identity.v1.RegisterRequest
@@ -799,28 +906,33 @@ var file_identity_v1_identity_proto_goTypes = []any{
 	(*GetProfileResponse)(nil),     // 10: identity.v1.GetProfileResponse
 	(*ChangePasswordRequest)(nil),  // 11: identity.v1.ChangePasswordRequest
 	(*ChangePasswordResponse)(nil), // 12: identity.v1.ChangePasswordResponse
+	(*SetUserRoleRequest)(nil),     // 13: identity.v1.SetUserRoleRequest
+	(*SetUserRoleResponse)(nil),    // 14: identity.v1.SetUserRoleResponse
 }
 var file_identity_v1_identity_proto_depIdxs = []int32{
 	0,  // 0: identity.v1.RegisterResponse.user:type_name -> identity.v1.User
 	0,  // 1: identity.v1.LoginResponse.user:type_name -> identity.v1.User
 	0,  // 2: identity.v1.GetProfileResponse.user:type_name -> identity.v1.User
-	1,  // 3: identity.v1.IdentityService.Register:input_type -> identity.v1.RegisterRequest
-	3,  // 4: identity.v1.IdentityService.Login:input_type -> identity.v1.LoginRequest
-	5,  // 5: identity.v1.IdentityService.Refresh:input_type -> identity.v1.RefreshRequest
-	7,  // 6: identity.v1.IdentityService.Logout:input_type -> identity.v1.LogoutRequest
-	9,  // 7: identity.v1.IdentityService.GetProfile:input_type -> identity.v1.GetProfileRequest
-	11, // 8: identity.v1.IdentityService.ChangePassword:input_type -> identity.v1.ChangePasswordRequest
-	2,  // 9: identity.v1.IdentityService.Register:output_type -> identity.v1.RegisterResponse
-	4,  // 10: identity.v1.IdentityService.Login:output_type -> identity.v1.LoginResponse
-	6,  // 11: identity.v1.IdentityService.Refresh:output_type -> identity.v1.RefreshResponse
-	8,  // 12: identity.v1.IdentityService.Logout:output_type -> identity.v1.LogoutResponse
-	10, // 13: identity.v1.IdentityService.GetProfile:output_type -> identity.v1.GetProfileResponse
-	12, // 14: identity.v1.IdentityService.ChangePassword:output_type -> identity.v1.ChangePasswordResponse
-	9,  // [9:15] is the sub-list for method output_type
-	3,  // [3:9] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	0,  // 3: identity.v1.SetUserRoleResponse.user:type_name -> identity.v1.User
+	1,  // 4: identity.v1.IdentityService.Register:input_type -> identity.v1.RegisterRequest
+	3,  // 5: identity.v1.IdentityService.Login:input_type -> identity.v1.LoginRequest
+	5,  // 6: identity.v1.IdentityService.Refresh:input_type -> identity.v1.RefreshRequest
+	7,  // 7: identity.v1.IdentityService.Logout:input_type -> identity.v1.LogoutRequest
+	9,  // 8: identity.v1.IdentityService.GetProfile:input_type -> identity.v1.GetProfileRequest
+	11, // 9: identity.v1.IdentityService.ChangePassword:input_type -> identity.v1.ChangePasswordRequest
+	13, // 10: identity.v1.IdentityService.SetUserRole:input_type -> identity.v1.SetUserRoleRequest
+	2,  // 11: identity.v1.IdentityService.Register:output_type -> identity.v1.RegisterResponse
+	4,  // 12: identity.v1.IdentityService.Login:output_type -> identity.v1.LoginResponse
+	6,  // 13: identity.v1.IdentityService.Refresh:output_type -> identity.v1.RefreshResponse
+	8,  // 14: identity.v1.IdentityService.Logout:output_type -> identity.v1.LogoutResponse
+	10, // 15: identity.v1.IdentityService.GetProfile:output_type -> identity.v1.GetProfileResponse
+	12, // 16: identity.v1.IdentityService.ChangePassword:output_type -> identity.v1.ChangePasswordResponse
+	14, // 17: identity.v1.IdentityService.SetUserRole:output_type -> identity.v1.SetUserRoleResponse
+	11, // [11:18] is the sub-list for method output_type
+	4,  // [4:11] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_identity_v1_identity_proto_init() }
@@ -834,7 +946,7 @@ func file_identity_v1_identity_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_identity_v1_identity_proto_rawDesc), len(file_identity_v1_identity_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
