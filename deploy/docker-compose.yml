@@ -75,6 +75,12 @@ services:
         condition: service_healthy
       nats:
         condition: service_healthy
+    healthcheck:
+      # readyz gates the gateway start on real dependency readiness.
+      test: ["CMD", "/healthcheck", "http://localhost:9091/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
     mem_limit: 256m
 
   core-worker:
@@ -90,6 +96,11 @@ services:
         condition: service_healthy
       nats:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/healthcheck", "http://localhost:9191/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
     mem_limit: 256m
 
   gateway:
@@ -104,8 +115,15 @@ services:
       - "8080:8080"
       - "9090:9090"
     depends_on:
-      - core
-      - redis
+      core:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/healthcheck", "http://localhost:9090/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
     mem_limit: 256m
 
 volumes:
