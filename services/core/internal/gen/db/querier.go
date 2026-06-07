@@ -21,6 +21,7 @@ type Querier interface {
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) error
 	// Identity module queries.
 	CreateUser(ctx context.Context, arg CreateUserParams) error
+	DeletePolicy(ctx context.Context, name string) (int64, error)
 	// Reads are owner-scoped so one user can never address another's note by id.
 	GetNote(ctx context.Context, arg GetNoteParams) (ExampleNote, error)
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (IdentityRefreshToken, error)
@@ -28,6 +29,9 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id pgtype.UUID) (IdentityUser, error)
 	InsertIdentityOutboxEvent(ctx context.Context, arg InsertIdentityOutboxEventParams) error
 	InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventParams) error
+	ListAllPolicies(ctx context.Context) ([]AuthzPolicy, error)
+	// Authorization module queries.
+	ListEnabledPolicies(ctx context.Context) ([]AuthzPolicy, error)
 	ListNotes(ctx context.Context, arg ListNotesParams) ([]ExampleNote, error)
 	MarkIdentityOutboxEventPublished(ctx context.Context, arg MarkIdentityOutboxEventPublishedParams) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
@@ -39,6 +43,7 @@ type Querier interface {
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (int64, error)
 	// Version-guarded update: zero affected rows = concurrent change.
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (int64, error)
+	UpsertPolicy(ctx context.Context, arg UpsertPolicyParams) error
 }
 
 var _ Querier = (*Queries)(nil)

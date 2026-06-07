@@ -176,6 +176,14 @@ func RunServer() error {
 	}
 	modules.RegisterAll(server.GRPC())
 
+	// Initial policy load. Survivable on failure: the engine denies by
+	// default until a refresh succeeds, which is the safe direction.
+	startCtx, cancelStart := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := modules.Authz.Start(startCtx); err != nil {
+		f.log.Warn().Err(err).Msg("authz: initial policy load failed; denying by default until refresh")
+	}
+	cancelStart()
+
 	ops := f.opsServer(f.cfg.App.MetricsPort)
 	f.shutdown.Register("ops-server", ops.Stop)
 	f.shutdown.Register("grpc-server", server.Stop)

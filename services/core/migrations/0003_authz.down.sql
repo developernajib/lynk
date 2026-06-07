@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS authz.policies;
+DROP SCHEMA IF EXISTS authz;

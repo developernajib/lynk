@@ -1,0 +1,90 @@
+// Authorization contract: attribute-based access control (ABAC). Policies
+// are CEL expressions over subject, resource, and action attributes, stored
+// in the database and editable at runtime. Decisions are deny-by-default
+// with deny-overrides.
+syntax = "proto3";
+
+package authz.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/developernajib/lynk/services/core/internal/gen/proto/authz/v1;authzv1";
+
+// AuthzService evaluates access decisions and manages policies.
+service AuthzService {
+  // Check decides whether the CALLER may perform an action on a resource.
+  rpc Check(CheckRequest) returns (CheckResponse);
+  // ListPolicies returns every policy (admin only).
+  rpc ListPolicies(ListPoliciesRequest) returns (ListPoliciesResponse);
+  // UpsertPolicy creates or replaces a policy by name (admin only).
+  rpc UpsertPolicy(UpsertPolicyRequest) returns (UpsertPolicyResponse);
+  // DeletePolicy removes a policy by name (admin only).
+  rpc DeletePolicy(DeletePolicyRequest) returns (DeletePolicyResponse);
+}
+
+// Policy is one ABAC rule.
+message Policy {
+  // name uniquely identifies the policy.
+  string name = 1;
+  // effect is "allow" or "deny"; any matching deny wins over every allow.
+  string effect = 2;
+  // resource_type the rule applies to; "*" matches every type.
+  string resource_type = 3;
+  // action the rule applies to (e.g. "read", "update"); "*" matches all.
+  string action = 4;
+  // condition is a CEL expression over subject, resource, action, and
+  // resource_type, e.g. resource["owner_id"] == subject["id"].
+  string condition = 5;
+  // enabled toggles the rule without deleting it.
+  bool enabled = 6;
+}
+
+// CheckRequest names the action and the resource's attributes. The SUBJECT
+// attributes come from the verified principal, never from the request.
+message CheckRequest {
+  // resource_type classifies what is being accessed.
+  string resource_type = 1 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
+  // action is what the caller wants to do.
+  string action = 2 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
+  // resource carries the resource's attributes, e.g. owner_id.
+  map<string, string> resource = 3;
+}
+
+// CheckResponse is the decision.
+message CheckResponse {
+  // allowed is the verdict.
+  bool allowed = 1;
+  // decided_by names the policy that produced the verdict, or "" when the
+  // default deny applied.
+  string decided_by = 2;
+}
+
+// ListPoliciesRequest is empty.
+message ListPoliciesRequest {}
+
+// ListPoliciesResponse returns all policies.
+message ListPoliciesResponse {
+  // policies is the full rule set.
+  repeated Policy policies = 1;
+}
+
+// UpsertPolicyRequest carries the policy to create or replace.
+message UpsertPolicyRequest {
+  // policy is validated (the CEL condition must compile) before saving.
+  Policy policy = 1 [(buf.validate.field).required = true];
+}
+
+// UpsertPolicyResponse returns the saved policy.
+message UpsertPolicyResponse {
+  // policy as persisted.
+  Policy policy = 1;
+}
+
+// DeletePolicyRequest names the policy to remove.
+message DeletePolicyRequest {
+  // name of the policy.
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+// DeletePolicyResponse is empty; success is the status code.
+message DeletePolicyResponse {}

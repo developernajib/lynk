@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 
+	"github.com/developernajib/lynk/services/core/internal/modules/authz"
 	"github.com/developernajib/lynk/services/core/internal/modules/example"
 	"github.com/developernajib/lynk/services/core/internal/modules/identity"
 	"github.com/developernajib/lynk/services/core/internal/platform/config"
@@ -40,6 +41,7 @@ var coreStreamSubjects = []string{
 type Modules struct {
 	Example  *example.Module
 	Identity *identity.Module
+	Authz    *authz.Module
 }
 
 // buildModules assembles all modules.
@@ -55,6 +57,11 @@ func buildModules(
 		return nil, err
 	}
 
+	authzModule, err := authz.New(authz.Dependencies{Pools: pools, Log: log})
+	if err != nil {
+		return nil, err
+	}
+
 	return &Modules{
 		Example: example.New(example.Dependencies{Pools: pools, Bus: bus, Log: log}),
 		Identity: identity.New(identity.Dependencies{
@@ -66,6 +73,7 @@ func buildModules(
 			RefreshTTL: cfg.JWT.RefreshTokenTTL,
 			Log:        log,
 		}),
+		Authz: authzModule,
 	}, nil
 }
 
@@ -111,6 +119,7 @@ func generateEphemeralKeyPEM() (string, error) {
 func (m *Modules) RegisterAll(server *grpc.Server) {
 	m.Example.Register(server)
 	m.Identity.Register(server)
+	m.Authz.Register(server)
 }
 
 // Runners returns every background loop the worker must run: outbox relays,

@@ -8,6 +8,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AuthzPolicy struct {
+	ID           pgtype.UUID        `json:"id"`
+	Name         string             `json:"name"`
+	Effect       string             `json:"effect"`
+	ResourceType string             `json:"resource_type"`
+	Action       string             `json:"action"`
+	Condition    string             `json:"condition"`
+	Enabled      bool               `json:"enabled"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
 type ExampleNote struct {
 	ID        pgtype.UUID        `json:"id"`
 	OwnerID   string             `json:"owner_id"`
