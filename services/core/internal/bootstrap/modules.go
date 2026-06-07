@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 
+	"github.com/developernajib/lynk/services/core/internal/modules/audit"
 	"github.com/developernajib/lynk/services/core/internal/modules/authz"
 	"github.com/developernajib/lynk/services/core/internal/modules/example"
 	"github.com/developernajib/lynk/services/core/internal/modules/identity"
@@ -42,6 +43,7 @@ type Modules struct {
 	Example  *example.Module
 	Identity *identity.Module
 	Authz    *authz.Module
+	Audit    *audit.Module
 }
 
 // buildModules assembles all modules.
@@ -79,6 +81,7 @@ func buildModules(
 			Log:        log,
 		}),
 		Authz: authzModule,
+		Audit: audit.New(audit.Dependencies{Pools: pools, Bus: bus, Log: log, Stream: coreStream}),
 	}, nil
 }
 
@@ -125,6 +128,7 @@ func (m *Modules) RegisterAll(server *grpc.Server) {
 	m.Example.Register(server)
 	m.Identity.Register(server)
 	m.Authz.Register(server)
+	m.Audit.Register(server)
 }
 
 // Runners returns every background loop the worker must run: outbox relays,
@@ -133,6 +137,7 @@ func (m *Modules) Runners() []runner {
 	return []runner{
 		m.Example.Relay(),
 		m.Identity.Relay(),
+		m.Audit.Runner(),
 	}
 }
 

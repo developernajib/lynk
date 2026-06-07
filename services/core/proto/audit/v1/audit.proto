@@ -1,0 +1,47 @@
+// Audit contract: the append-only ledger built by subscription. A durable
+// consumer over every core event writes the ledger, so no module can forget
+// to audit; anything published to the bus is recorded.
+syntax = "proto3";
+
+package audit.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/developernajib/lynk/services/core/internal/gen/proto/audit/v1;auditv1";
+
+// AuditService reads the ledger.
+service AuditService {
+  // ListAuditLog pages the ledger, newest first (admin only).
+  rpc ListAuditLog(ListAuditLogRequest) returns (ListAuditLogResponse);
+}
+
+// AuditEntry is one recorded event.
+message AuditEntry {
+  // id is the entry's UUIDv7.
+  string id = 1;
+  // subject is the bus routing key, e.g. "identity.user.registered".
+  string subject = 2;
+  // payload is the event envelope as JSON.
+  string payload = 3;
+  // occurred_at is when the producer recorded the event.
+  google.protobuf.Timestamp occurred_at = 4;
+  // recorded_at is when the ledger consumed it.
+  google.protobuf.Timestamp recorded_at = 5;
+}
+
+// ListAuditLogRequest pages and optionally filters by subject prefix.
+message ListAuditLogRequest {
+  // limit caps the page size.
+  int32 limit = 1 [(buf.validate.field).int32 = {gte: 1, lte: 200}];
+  // offset skips already-seen rows.
+  int32 offset = 2 [(buf.validate.field).int32.gte = 0];
+  // subject_prefix filters entries, e.g. "identity."; empty matches all.
+  string subject_prefix = 3 [(buf.validate.field).string.max_len = 200];
+}
+
+// ListAuditLogResponse returns one page.
+message ListAuditLogResponse {
+  // entries is the page, newest first.
+  repeated AuditEntry entries = 1;
+}

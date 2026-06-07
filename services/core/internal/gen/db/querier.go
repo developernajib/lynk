@@ -27,9 +27,13 @@ type Querier interface {
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (IdentityRefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (IdentityUser, error)
 	GetUserByID(ctx context.Context, id pgtype.UUID) (IdentityUser, error)
+	// Audit module queries. The ledger is append-only: insert and read, nothing
+	// else.
+	InsertAuditEntry(ctx context.Context, arg InsertAuditEntryParams) error
 	InsertIdentityOutboxEvent(ctx context.Context, arg InsertIdentityOutboxEventParams) error
 	InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventParams) error
 	ListAllPolicies(ctx context.Context) ([]AuthzPolicy, error)
+	ListAuditEntries(ctx context.Context, arg ListAuditEntriesParams) ([]AuditEntry, error)
 	// Authorization module queries.
 	ListEnabledPolicies(ctx context.Context) ([]AuthzPolicy, error)
 	ListNotes(ctx context.Context, arg ListNotesParams) ([]ExampleNote, error)

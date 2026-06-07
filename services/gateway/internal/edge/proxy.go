@@ -35,6 +35,7 @@ var routes = []route{
 	{"example.", "core"},
 	{"identity.", "core"},
 	{"authz.", "core"},
+	{"audit.", "core"},
 }
 
 type route struct {

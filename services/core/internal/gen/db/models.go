@@ -8,6 +8,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AuditEntry struct {
+	ID         pgtype.UUID        `json:"id"`
+	Subject    string             `json:"subject"`
+	Payload    []byte             `json:"payload"`
+	OccurredAt pgtype.Timestamptz `json:"occurred_at"`
+	RecordedAt pgtype.Timestamptz `json:"recorded_at"`
+}
+
 type AuthzPolicy struct {
 	ID           pgtype.UUID        `json:"id"`
 	Name         string             `json:"name"`
