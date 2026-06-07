@@ -84,6 +84,11 @@ func (n *Note) Update(title vo.Title, body string, now time.Time) {
 	})
 }
 
+// BumpVersion mirrors the database's version increment after a successful
+// guarded UPDATE, so the aggregate the caller holds (and returns to the
+// client) reflects the persisted version. Called by the repository only.
+func (n *Note) BumpVersion() { n.version++ }
+
 // PullEvents returns and clears the recorded events; called by the use case
 // after a successful save so each event publishes exactly once.
 func (n *Note) PullEvents() []Event {

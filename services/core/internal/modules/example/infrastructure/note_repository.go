@@ -103,6 +103,9 @@ func (r *NoteRepository) Update(ctx context.Context, note *domain.Note) error {
 	if affected == 0 {
 		return domain.ErrConcurrentUpdate
 	}
+	// The guarded UPDATE bumped the row's version; mirror it in memory so
+	// the caller returns the version the next update must present.
+	note.BumpVersion()
 	return nil
 }
 
