@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -119,6 +120,23 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) error {
 	}
 	if affected == 0 {
 		return domain.ErrConcurrentUpdate
+	}
+	return nil
+}
+
+// MarkEmailVerified stamps the verification time; already-verified rows are
+// untouched, so the operation is idempotent.
+func (r *UserRepository) MarkEmailVerified(ctx context.Context, id vo.UserID, now time.Time) error {
+	pgID, err := uuidFromString(id.String())
+	if err != nil {
+		return err
+	}
+	err = r.writeQuerier(ctx).SetEmailVerified(ctx, db.SetEmailVerifiedParams{
+		ID:              pgID,
+		EmailVerifiedAt: pgtype.Timestamptz{Time: now, Valid: true},
+	})
+	if err != nil {
+		return fmt.Errorf("identity: mark email verified: %w", err)
 	}
 	return nil
 }

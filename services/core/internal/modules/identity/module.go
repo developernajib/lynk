@@ -43,15 +43,20 @@ type Module struct {
 func New(deps Dependencies) *Module {
 	users := infrastructure.NewUserRepository(deps.Pools)
 	sessions := infrastructure.NewRefreshTokenRepository(deps.Pools)
+	otps := infrastructure.NewOTPRepository(deps.Pools)
+	apiKeys := infrastructure.NewAPIKeyRepository(deps.Pools)
 	events := infrastructure.NewOutboxPublisher(deps.Pools)
 	uow := postgres.NewTxManager(deps.Pools.Write)
 	systemClock := clock.System{}
 	ids := infrastructure.UUIDGenerator{}
 	hasher := infrastructure.Argon2idHasher{}
 	opaque := infrastructure.OpaqueTokens{}
+	codes := infrastructure.OTPCodes{}
 	signer := infrastructure.NewAccessTokenSigner(deps.Signer)
 	blacklist := infrastructure.NewRedisBlacklist(deps.Redis)
 	throttle := infrastructure.NewRedisLoginThrottle(deps.Redis)
+	notifier := infrastructure.NewLogNotifier(deps.Log)
+	keyCache := infrastructure.NewRedisAPIKeyCache(deps.Redis)
 
 	tokens := application.NewTokenService(signer, opaque, sessions, ids, systemClock, deps.RefreshTTL)
 
@@ -63,6 +68,8 @@ func New(deps Dependencies) *Module {
 		application.NewGetProfile(users),
 		application.NewChangePassword(users, sessions, hasher, events, uow, systemClock),
 		application.NewSetUserRole(users, events, uow, systemClock),
+		application.NewOTPService(users, otps, sessions, hasher, codes, notifier, throttle, events, uow, systemClock, ids),
+		application.NewAPIKeyService(users, apiKeys, opaque, keyCache, events, uow, systemClock, ids),
 	)
 
 	return &Module{

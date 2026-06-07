@@ -27,6 +27,26 @@ service IdentityService {
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
   // SetUserRole changes a user's role attribute (admin only).
   rpc SetUserRole(SetUserRoleRequest) returns (SetUserRoleResponse);
+  // RequestPasswordReset emails a one-time code; always succeeds so
+  // responses cannot reveal whether an account exists.
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
+  // ResetPassword consumes the code, sets the password, and revokes every
+  // session.
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+  // RequestEmailVerification sends the caller a one-time code.
+  rpc RequestEmailVerification(RequestEmailVerificationRequest) returns (RequestEmailVerificationResponse);
+  // VerifyEmail consumes the code and marks the caller's email verified.
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+  // CreateAPIKey mints a machine credential; the full key is returned
+  // exactly once.
+  rpc CreateAPIKey(CreateAPIKeyRequest) returns (CreateAPIKeyResponse);
+  // ListAPIKeys lists the caller's keys (metadata only, never the secret).
+  rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse);
+  // RevokeAPIKey permanently disables one of the caller's keys.
+  rpc RevokeAPIKey(RevokeAPIKeyRequest) returns (RevokeAPIKeyResponse);
+  // ValidateAPIKey resolves a presented key to its principal; for
+  // service-side machine authentication.
+  rpc ValidateAPIKey(ValidateAPIKeyRequest) returns (ValidateAPIKeyResponse);
 }
 
 // User is the public profile shape.
@@ -137,4 +157,101 @@ message SetUserRoleRequest {
 message SetUserRoleResponse {
   // user reflects the new role.
   User user = 1;
+}
+
+// RequestPasswordResetRequest names the account by email.
+message RequestPasswordResetRequest {
+  // email of the account; unknown addresses get the same response.
+  string email = 1 [(buf.validate.field).string.email = true];
+}
+
+// RequestPasswordResetResponse is empty regardless of account existence.
+message RequestPasswordResetResponse {}
+
+// ResetPasswordRequest carries the emailed code and the new password.
+message ResetPasswordRequest {
+  // email of the account.
+  string email = 1 [(buf.validate.field).string.email = true];
+  // code is the one-time code from the email.
+  string code = 2 [(buf.validate.field).string.len = 6];
+  // new_password must be 10-200 characters.
+  string new_password = 3 [(buf.validate.field).string = {min_len: 10, max_len: 200}];
+}
+
+// ResetPasswordResponse is empty; all sessions are revoked on success.
+message ResetPasswordResponse {}
+
+// RequestEmailVerificationRequest is empty; identity comes from the caller.
+message RequestEmailVerificationRequest {}
+
+// RequestEmailVerificationResponse is empty.
+message RequestEmailVerificationResponse {}
+
+// VerifyEmailRequest carries the emailed code.
+message VerifyEmailRequest {
+  // code is the one-time code from the email.
+  string code = 1 [(buf.validate.field).string.len = 6];
+}
+
+// VerifyEmailResponse is empty; success marks the email verified.
+message VerifyEmailResponse {}
+
+// APIKey is a machine credential's metadata; the secret never appears here.
+message APIKey {
+  // id identifies the key for revocation.
+  string id = 1;
+  // name is the caller-chosen label.
+  string name = 2;
+  // prefix is the displayable hint, e.g. "lynk_AB12".
+  string prefix = 3;
+  // created_at is when the key was minted (Unix seconds).
+  int64 created_at = 4;
+  // revoked is whether the key has been disabled.
+  bool revoked = 5;
+}
+
+// CreateAPIKeyRequest names the new key.
+message CreateAPIKeyRequest {
+  // name labels the key, e.g. "ci-deployer".
+  string name = 1 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
+}
+
+// CreateAPIKeyResponse returns the secret exactly once.
+message CreateAPIKeyResponse {
+  // api_key is the metadata record.
+  APIKey api_key = 1;
+  // key is the full secret; it is never retrievable again.
+  string key = 2;
+}
+
+// ListAPIKeysRequest is empty; identity comes from the caller.
+message ListAPIKeysRequest {}
+
+// ListAPIKeysResponse returns the caller's keys.
+message ListAPIKeysResponse {
+  // api_keys is the metadata list.
+  repeated APIKey api_keys = 1;
+}
+
+// RevokeAPIKeyRequest names the key to disable.
+message RevokeAPIKeyRequest {
+  // id of the key; must belong to the caller.
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+// RevokeAPIKeyResponse is empty; success is the status code.
+message RevokeAPIKeyResponse {}
+
+// ValidateAPIKeyRequest presents a key for validation.
+message ValidateAPIKeyRequest {
+  // key is the full secret.
+  string key = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+// ValidateAPIKeyResponse resolves the key's principal.
+message ValidateAPIKeyResponse {
+  // user_id owns the key.
+  string user_id = 1;
+  // role is the owner's role attribute.
+  string role = 2;
 }

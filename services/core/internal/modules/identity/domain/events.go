@@ -43,3 +43,43 @@ type RoleChanged struct {
 
 // Subject implements Event.
 func (RoleChanged) Subject() string { return "identity.user.role_changed" }
+
+// PasswordResetRequested is raised when a reset code is issued. It carries
+// NO code; delivery goes through the notifier port, never the bus.
+type PasswordResetRequested struct {
+	UserID     string
+	OccurredAt time.Time
+}
+
+// Subject implements Event.
+func (PasswordResetRequested) Subject() string { return "identity.user.password_reset_requested" }
+
+// EmailVerified is raised when a user proves their address.
+type EmailVerified struct {
+	UserID     string
+	OccurredAt time.Time
+}
+
+// Subject implements Event.
+func (EmailVerified) Subject() string { return "identity.user.email_verified" }
+
+// APIKeyCreated is raised when a machine credential is minted.
+type APIKeyCreated struct {
+	UserID     string
+	KeyID      string
+	Name       string
+	OccurredAt time.Time
+}
+
+// Subject implements Event.
+func (APIKeyCreated) Subject() string { return "identity.apikey.created" }
+
+// APIKeyRevoked is raised when a machine credential is disabled.
+type APIKeyRevoked struct {
+	UserID     string
+	KeyID      string
+	OccurredAt time.Time
+}
+
+// Subject implements Event.
+func (APIKeyRevoked) Subject() string { return "identity.apikey.revoked" }

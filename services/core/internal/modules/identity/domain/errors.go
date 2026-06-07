@@ -27,3 +27,10 @@ var ErrRefreshTokenInvalid = errors.New("refresh token invalid")
 
 // ErrConcurrentUpdate means another writer won the optimistic-lock race.
 var ErrConcurrentUpdate = errors.New("user was modified concurrently")
+
+// ErrInvalidOTP covers unknown, expired, consumed, and mismatched codes:
+// one sentinel, same enumeration reasoning as credentials.
+var ErrInvalidOTP = errors.New("invalid or expired code")
+
+// ErrAPIKeyNotFound means no live key matches; covers revoked keys too.
+var ErrAPIKeyNotFound = errors.New("api key not found")

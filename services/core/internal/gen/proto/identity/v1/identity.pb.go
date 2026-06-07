@@ -817,6 +817,797 @@ func (x *SetUserRoleResponse) GetUser() *User {
 	return nil
 }
 
+// RequestPasswordResetRequest names the account by email.
+type RequestPasswordResetRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// email of the account; unknown addresses get the same response.
+	Email         string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestPasswordResetRequest) Reset() {
+	*x = RequestPasswordResetRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestPasswordResetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestPasswordResetRequest) ProtoMessage() {}
+
+func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestPasswordResetRequest.ProtoReflect.Descriptor instead.
+func (*RequestPasswordResetRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *RequestPasswordResetRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+// RequestPasswordResetResponse is empty regardless of account existence.
+type RequestPasswordResetResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestPasswordResetResponse) Reset() {
+	*x = RequestPasswordResetResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestPasswordResetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestPasswordResetResponse) ProtoMessage() {}
+
+func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestPasswordResetResponse.ProtoReflect.Descriptor instead.
+func (*RequestPasswordResetResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{16}
+}
+
+// ResetPasswordRequest carries the emailed code and the new password.
+type ResetPasswordRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// email of the account.
+	Email string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	// code is the one-time code from the email.
+	Code string `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	// new_password must be 10-200 characters.
+	NewPassword   string `protobuf:"bytes,3,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetPasswordRequest) Reset() {
+	*x = ResetPasswordRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetPasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetPasswordRequest) ProtoMessage() {}
+
+func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
+func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ResetPasswordRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *ResetPasswordRequest) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *ResetPasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+// ResetPasswordResponse is empty; all sessions are revoked on success.
+type ResetPasswordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetPasswordResponse) Reset() {
+	*x = ResetPasswordResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetPasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetPasswordResponse) ProtoMessage() {}
+
+func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetPasswordResponse.ProtoReflect.Descriptor instead.
+func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{18}
+}
+
+// RequestEmailVerificationRequest is empty; identity comes from the caller.
+type RequestEmailVerificationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestEmailVerificationRequest) Reset() {
+	*x = RequestEmailVerificationRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestEmailVerificationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestEmailVerificationRequest) ProtoMessage() {}
+
+func (x *RequestEmailVerificationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestEmailVerificationRequest.ProtoReflect.Descriptor instead.
+func (*RequestEmailVerificationRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{19}
+}
+
+// RequestEmailVerificationResponse is empty.
+type RequestEmailVerificationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestEmailVerificationResponse) Reset() {
+	*x = RequestEmailVerificationResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestEmailVerificationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestEmailVerificationResponse) ProtoMessage() {}
+
+func (x *RequestEmailVerificationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestEmailVerificationResponse.ProtoReflect.Descriptor instead.
+func (*RequestEmailVerificationResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{20}
+}
+
+// VerifyEmailRequest carries the emailed code.
+type VerifyEmailRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// code is the one-time code from the email.
+	Code          string `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyEmailRequest) Reset() {
+	*x = VerifyEmailRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyEmailRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailRequest) ProtoMessage() {}
+
+func (x *VerifyEmailRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailRequest.ProtoReflect.Descriptor instead.
+func (*VerifyEmailRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *VerifyEmailRequest) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+// VerifyEmailResponse is empty; success marks the email verified.
+type VerifyEmailResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyEmailResponse) Reset() {
+	*x = VerifyEmailResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyEmailResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailResponse) ProtoMessage() {}
+
+func (x *VerifyEmailResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailResponse.ProtoReflect.Descriptor instead.
+func (*VerifyEmailResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{22}
+}
+
+// APIKey is a machine credential's metadata; the secret never appears here.
+type APIKey struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// id identifies the key for revocation.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// name is the caller-chosen label.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// prefix is the displayable hint, e.g. "lynk_AB12".
+	Prefix string `protobuf:"bytes,3,opt,name=prefix,proto3" json:"prefix,omitempty"`
+	// created_at is when the key was minted (Unix seconds).
+	CreatedAt int64 `protobuf:"varint,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// revoked is whether the key has been disabled.
+	Revoked       bool `protobuf:"varint,5,opt,name=revoked,proto3" json:"revoked,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *APIKey) Reset() {
+	*x = APIKey{}
+	mi := &file_identity_v1_identity_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *APIKey) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*APIKey) ProtoMessage() {}
+
+func (x *APIKey) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use APIKey.ProtoReflect.Descriptor instead.
+func (*APIKey) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *APIKey) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *APIKey) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *APIKey) GetPrefix() string {
+	if x != nil {
+		return x.Prefix
+	}
+	return ""
+}
+
+func (x *APIKey) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *APIKey) GetRevoked() bool {
+	if x != nil {
+		return x.Revoked
+	}
+	return false
+}
+
+// CreateAPIKeyRequest names the new key.
+type CreateAPIKeyRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// name labels the key, e.g. "ci-deployer".
+	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateAPIKeyRequest) Reset() {
+	*x = CreateAPIKeyRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateAPIKeyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateAPIKeyRequest) ProtoMessage() {}
+
+func (x *CreateAPIKeyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateAPIKeyRequest.ProtoReflect.Descriptor instead.
+func (*CreateAPIKeyRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *CreateAPIKeyRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+// CreateAPIKeyResponse returns the secret exactly once.
+type CreateAPIKeyResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// api_key is the metadata record.
+	ApiKey *APIKey `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
+	// key is the full secret; it is never retrievable again.
+	Key           string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateAPIKeyResponse) Reset() {
+	*x = CreateAPIKeyResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateAPIKeyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateAPIKeyResponse) ProtoMessage() {}
+
+func (x *CreateAPIKeyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateAPIKeyResponse.ProtoReflect.Descriptor instead.
+func (*CreateAPIKeyResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *CreateAPIKeyResponse) GetApiKey() *APIKey {
+	if x != nil {
+		return x.ApiKey
+	}
+	return nil
+}
+
+func (x *CreateAPIKeyResponse) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+// ListAPIKeysRequest is empty; identity comes from the caller.
+type ListAPIKeysRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAPIKeysRequest) Reset() {
+	*x = ListAPIKeysRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAPIKeysRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAPIKeysRequest) ProtoMessage() {}
+
+func (x *ListAPIKeysRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAPIKeysRequest.ProtoReflect.Descriptor instead.
+func (*ListAPIKeysRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{26}
+}
+
+// ListAPIKeysResponse returns the caller's keys.
+type ListAPIKeysResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// api_keys is the metadata list.
+	ApiKeys       []*APIKey `protobuf:"bytes,1,rep,name=api_keys,json=apiKeys,proto3" json:"api_keys,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAPIKeysResponse) Reset() {
+	*x = ListAPIKeysResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAPIKeysResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAPIKeysResponse) ProtoMessage() {}
+
+func (x *ListAPIKeysResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAPIKeysResponse.ProtoReflect.Descriptor instead.
+func (*ListAPIKeysResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ListAPIKeysResponse) GetApiKeys() []*APIKey {
+	if x != nil {
+		return x.ApiKeys
+	}
+	return nil
+}
+
+// RevokeAPIKeyRequest names the key to disable.
+type RevokeAPIKeyRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// id of the key; must belong to the caller.
+	Id            string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeAPIKeyRequest) Reset() {
+	*x = RevokeAPIKeyRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeAPIKeyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeAPIKeyRequest) ProtoMessage() {}
+
+func (x *RevokeAPIKeyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeAPIKeyRequest.ProtoReflect.Descriptor instead.
+func (*RevokeAPIKeyRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *RevokeAPIKeyRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+// RevokeAPIKeyResponse is empty; success is the status code.
+type RevokeAPIKeyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeAPIKeyResponse) Reset() {
+	*x = RevokeAPIKeyResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeAPIKeyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeAPIKeyResponse) ProtoMessage() {}
+
+func (x *RevokeAPIKeyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeAPIKeyResponse.ProtoReflect.Descriptor instead.
+func (*RevokeAPIKeyResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{29}
+}
+
+// ValidateAPIKeyRequest presents a key for validation.
+type ValidateAPIKeyRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key is the full secret.
+	Key           string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ValidateAPIKeyRequest) Reset() {
+	*x = ValidateAPIKeyRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidateAPIKeyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidateAPIKeyRequest) ProtoMessage() {}
+
+func (x *ValidateAPIKeyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidateAPIKeyRequest.ProtoReflect.Descriptor instead.
+func (*ValidateAPIKeyRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *ValidateAPIKeyRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+// ValidateAPIKeyResponse resolves the key's principal.
+type ValidateAPIKeyResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// user_id owns the key.
+	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// role is the owner's role attribute.
+	Role          string `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ValidateAPIKeyResponse) Reset() {
+	*x = ValidateAPIKeyResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidateAPIKeyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidateAPIKeyResponse) ProtoMessage() {}
+
+func (x *ValidateAPIKeyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidateAPIKeyResponse.ProtoReflect.Descriptor instead.
+func (*ValidateAPIKeyResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *ValidateAPIKeyResponse) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *ValidateAPIKeyResponse) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
 var File_identity_v1_identity_proto protoreflect.FileDescriptor
 
 const file_identity_v1_identity_proto_rawDesc = "" +
@@ -868,7 +1659,46 @@ const file_identity_v1_identity_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x12\x1d\n" +
 	"\x04role\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x182R\x04role\"<\n" +
 	"\x13SetUserRoleResponse\x12%\n" +
-	"\x04user\x18\x01 \x01(\v2\x11.identity.v1.UserR\x04user2\x9f\x04\n" +
+	"\x04user\x18\x01 \x01(\v2\x11.identity.v1.UserR\x04user\"<\n" +
+	"\x1bRequestPasswordResetRequest\x12\x1d\n" +
+	"\x05email\x18\x01 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\"\x1e\n" +
+	"\x1cRequestPasswordResetResponse\"\x82\x01\n" +
+	"\x14ResetPasswordRequest\x12\x1d\n" +
+	"\x05email\x18\x01 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12\x1c\n" +
+	"\x04code\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x98\x01\x06R\x04code\x12-\n" +
+	"\fnew_password\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\n" +
+	"\x18\xc8\x01R\vnewPassword\"\x17\n" +
+	"\x15ResetPasswordResponse\"!\n" +
+	"\x1fRequestEmailVerificationRequest\"\"\n" +
+	" RequestEmailVerificationResponse\"2\n" +
+	"\x12VerifyEmailRequest\x12\x1c\n" +
+	"\x04code\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x98\x01\x06R\x04code\"\x15\n" +
+	"\x13VerifyEmailResponse\"}\n" +
+	"\x06APIKey\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06prefix\x18\x03 \x01(\tR\x06prefix\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x04 \x01(\x03R\tcreatedAt\x12\x18\n" +
+	"\arevoked\x18\x05 \x01(\bR\arevoked\"4\n" +
+	"\x13CreateAPIKeyRequest\x12\x1d\n" +
+	"\x04name\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18dR\x04name\"V\n" +
+	"\x14CreateAPIKeyResponse\x12,\n" +
+	"\aapi_key\x18\x01 \x01(\v2\x13.identity.v1.APIKeyR\x06apiKey\x12\x10\n" +
+	"\x03key\x18\x02 \x01(\tR\x03key\"\x14\n" +
+	"\x12ListAPIKeysRequest\"E\n" +
+	"\x13ListAPIKeysResponse\x12.\n" +
+	"\bapi_keys\x18\x01 \x03(\v2\x13.identity.v1.APIKeyR\aapiKeys\"/\n" +
+	"\x13RevokeAPIKeyRequest\x12\x18\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\x16\n" +
+	"\x14RevokeAPIKeyResponse\"2\n" +
+	"\x15ValidateAPIKeyRequest\x12\x19\n" +
+	"\x03key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03key\"E\n" +
+	"\x16ValidateAPIKeyResponse\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x12\n" +
+	"\x04role\x18\x02 \x01(\tR\x04role2\x86\n" +
+	"\n" +
 	"\x0fIdentityService\x12G\n" +
 	"\bRegister\x12\x1c.identity.v1.RegisterRequest\x1a\x1d.identity.v1.RegisterResponse\x12>\n" +
 	"\x05Login\x12\x19.identity.v1.LoginRequest\x1a\x1a.identity.v1.LoginResponse\x12D\n" +
@@ -877,7 +1707,15 @@ const file_identity_v1_identity_proto_rawDesc = "" +
 	"\n" +
 	"GetProfile\x12\x1e.identity.v1.GetProfileRequest\x1a\x1f.identity.v1.GetProfileResponse\x12Y\n" +
 	"\x0eChangePassword\x12\".identity.v1.ChangePasswordRequest\x1a#.identity.v1.ChangePasswordResponse\x12P\n" +
-	"\vSetUserRole\x12\x1f.identity.v1.SetUserRoleRequest\x1a .identity.v1.SetUserRoleResponseBXZVgithub.com/developernajib/lynk/services/core/internal/gen/proto/identity/v1;identityv1b\x06proto3"
+	"\vSetUserRole\x12\x1f.identity.v1.SetUserRoleRequest\x1a .identity.v1.SetUserRoleResponse\x12k\n" +
+	"\x14RequestPasswordReset\x12(.identity.v1.RequestPasswordResetRequest\x1a).identity.v1.RequestPasswordResetResponse\x12V\n" +
+	"\rResetPassword\x12!.identity.v1.ResetPasswordRequest\x1a\".identity.v1.ResetPasswordResponse\x12w\n" +
+	"\x18RequestEmailVerification\x12,.identity.v1.RequestEmailVerificationRequest\x1a-.identity.v1.RequestEmailVerificationResponse\x12P\n" +
+	"\vVerifyEmail\x12\x1f.identity.v1.VerifyEmailRequest\x1a .identity.v1.VerifyEmailResponse\x12S\n" +
+	"\fCreateAPIKey\x12 .identity.v1.CreateAPIKeyRequest\x1a!.identity.v1.CreateAPIKeyResponse\x12P\n" +
+	"\vListAPIKeys\x12\x1f.identity.v1.ListAPIKeysRequest\x1a .identity.v1.ListAPIKeysResponse\x12S\n" +
+	"\fRevokeAPIKey\x12 .identity.v1.RevokeAPIKeyRequest\x1a!.identity.v1.RevokeAPIKeyResponse\x12Y\n" +
+	"\x0eValidateAPIKey\x12\".identity.v1.ValidateAPIKeyRequest\x1a#.identity.v1.ValidateAPIKeyResponseBXZVgithub.com/developernajib/lynk/services/core/internal/gen/proto/identity/v1;identityv1b\x06proto3"
 
 var (
 	file_identity_v1_identity_proto_rawDescOnce sync.Once
@@ -891,48 +1729,83 @@ func file_identity_v1_identity_proto_rawDescGZIP() []byte {
 	return file_identity_v1_identity_proto_rawDescData
 }
 
-var file_identity_v1_identity_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_identity_v1_identity_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_identity_v1_identity_proto_goTypes = []any{
-	(*User)(nil),                   // 0: identity.v1.User
-	(*RegisterRequest)(nil),        // 1: identity.v1.RegisterRequest
-	(*RegisterResponse)(nil),       // 2: identity.v1.RegisterResponse
-	(*LoginRequest)(nil),           // 3: identity.v1.LoginRequest
-	(*LoginResponse)(nil),          // 4: identity.v1.LoginResponse
-	(*RefreshRequest)(nil),         // 5: identity.v1.RefreshRequest
-	(*RefreshResponse)(nil),        // 6: identity.v1.RefreshResponse
-	(*LogoutRequest)(nil),          // 7: identity.v1.LogoutRequest
-	(*LogoutResponse)(nil),         // 8: identity.v1.LogoutResponse
-	(*GetProfileRequest)(nil),      // 9: identity.v1.GetProfileRequest
-	(*GetProfileResponse)(nil),     // 10: identity.v1.GetProfileResponse
-	(*ChangePasswordRequest)(nil),  // 11: identity.v1.ChangePasswordRequest
-	(*ChangePasswordResponse)(nil), // 12: identity.v1.ChangePasswordResponse
-	(*SetUserRoleRequest)(nil),     // 13: identity.v1.SetUserRoleRequest
-	(*SetUserRoleResponse)(nil),    // 14: identity.v1.SetUserRoleResponse
+	(*User)(nil),                             // 0: identity.v1.User
+	(*RegisterRequest)(nil),                  // 1: identity.v1.RegisterRequest
+	(*RegisterResponse)(nil),                 // 2: identity.v1.RegisterResponse
+	(*LoginRequest)(nil),                     // 3: identity.v1.LoginRequest
+	(*LoginResponse)(nil),                    // 4: identity.v1.LoginResponse
+	(*RefreshRequest)(nil),                   // 5: identity.v1.RefreshRequest
+	(*RefreshResponse)(nil),                  // 6: identity.v1.RefreshResponse
+	(*LogoutRequest)(nil),                    // 7: identity.v1.LogoutRequest
+	(*LogoutResponse)(nil),                   // 8: identity.v1.LogoutResponse
+	(*GetProfileRequest)(nil),                // 9: identity.v1.GetProfileRequest
+	(*GetProfileResponse)(nil),               // 10: identity.v1.GetProfileResponse
+	(*ChangePasswordRequest)(nil),            // 11: identity.v1.ChangePasswordRequest
+	(*ChangePasswordResponse)(nil),           // 12: identity.v1.ChangePasswordResponse
+	(*SetUserRoleRequest)(nil),               // 13: identity.v1.SetUserRoleRequest
+	(*SetUserRoleResponse)(nil),              // 14: identity.v1.SetUserRoleResponse
+	(*RequestPasswordResetRequest)(nil),      // 15: identity.v1.RequestPasswordResetRequest
+	(*RequestPasswordResetResponse)(nil),     // 16: identity.v1.RequestPasswordResetResponse
+	(*ResetPasswordRequest)(nil),             // 17: identity.v1.ResetPasswordRequest
+	(*ResetPasswordResponse)(nil),            // 18: identity.v1.ResetPasswordResponse
+	(*RequestEmailVerificationRequest)(nil),  // 19: identity.v1.RequestEmailVerificationRequest
+	(*RequestEmailVerificationResponse)(nil), // 20: identity.v1.RequestEmailVerificationResponse
+	(*VerifyEmailRequest)(nil),               // 21: identity.v1.VerifyEmailRequest
+	(*VerifyEmailResponse)(nil),              // 22: identity.v1.VerifyEmailResponse
+	(*APIKey)(nil),                           // 23: identity.v1.APIKey
+	(*CreateAPIKeyRequest)(nil),              // 24: identity.v1.CreateAPIKeyRequest
+	(*CreateAPIKeyResponse)(nil),             // 25: identity.v1.CreateAPIKeyResponse
+	(*ListAPIKeysRequest)(nil),               // 26: identity.v1.ListAPIKeysRequest
+	(*ListAPIKeysResponse)(nil),              // 27: identity.v1.ListAPIKeysResponse
+	(*RevokeAPIKeyRequest)(nil),              // 28: identity.v1.RevokeAPIKeyRequest
+	(*RevokeAPIKeyResponse)(nil),             // 29: identity.v1.RevokeAPIKeyResponse
+	(*ValidateAPIKeyRequest)(nil),            // 30: identity.v1.ValidateAPIKeyRequest
+	(*ValidateAPIKeyResponse)(nil),           // 31: identity.v1.ValidateAPIKeyResponse
 }
 var file_identity_v1_identity_proto_depIdxs = []int32{
 	0,  // 0: identity.v1.RegisterResponse.user:type_name -> identity.v1.User
 	0,  // 1: identity.v1.LoginResponse.user:type_name -> identity.v1.User
 	0,  // 2: identity.v1.GetProfileResponse.user:type_name -> identity.v1.User
 	0,  // 3: identity.v1.SetUserRoleResponse.user:type_name -> identity.v1.User
-	1,  // 4: identity.v1.IdentityService.Register:input_type -> identity.v1.RegisterRequest
-	3,  // 5: identity.v1.IdentityService.Login:input_type -> identity.v1.LoginRequest
-	5,  // 6: identity.v1.IdentityService.Refresh:input_type -> identity.v1.RefreshRequest
-	7,  // 7: identity.v1.IdentityService.Logout:input_type -> identity.v1.LogoutRequest
-	9,  // 8: identity.v1.IdentityService.GetProfile:input_type -> identity.v1.GetProfileRequest
-	11, // 9: identity.v1.IdentityService.ChangePassword:input_type -> identity.v1.ChangePasswordRequest
-	13, // 10: identity.v1.IdentityService.SetUserRole:input_type -> identity.v1.SetUserRoleRequest
-	2,  // 11: identity.v1.IdentityService.Register:output_type -> identity.v1.RegisterResponse
-	4,  // 12: identity.v1.IdentityService.Login:output_type -> identity.v1.LoginResponse
-	6,  // 13: identity.v1.IdentityService.Refresh:output_type -> identity.v1.RefreshResponse
-	8,  // 14: identity.v1.IdentityService.Logout:output_type -> identity.v1.LogoutResponse
-	10, // 15: identity.v1.IdentityService.GetProfile:output_type -> identity.v1.GetProfileResponse
-	12, // 16: identity.v1.IdentityService.ChangePassword:output_type -> identity.v1.ChangePasswordResponse
-	14, // 17: identity.v1.IdentityService.SetUserRole:output_type -> identity.v1.SetUserRoleResponse
-	11, // [11:18] is the sub-list for method output_type
-	4,  // [4:11] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	23, // 4: identity.v1.CreateAPIKeyResponse.api_key:type_name -> identity.v1.APIKey
+	23, // 5: identity.v1.ListAPIKeysResponse.api_keys:type_name -> identity.v1.APIKey
+	1,  // 6: identity.v1.IdentityService.Register:input_type -> identity.v1.RegisterRequest
+	3,  // 7: identity.v1.IdentityService.Login:input_type -> identity.v1.LoginRequest
+	5,  // 8: identity.v1.IdentityService.Refresh:input_type -> identity.v1.RefreshRequest
+	7,  // 9: identity.v1.IdentityService.Logout:input_type -> identity.v1.LogoutRequest
+	9,  // 10: identity.v1.IdentityService.GetProfile:input_type -> identity.v1.GetProfileRequest
+	11, // 11: identity.v1.IdentityService.ChangePassword:input_type -> identity.v1.ChangePasswordRequest
+	13, // 12: identity.v1.IdentityService.SetUserRole:input_type -> identity.v1.SetUserRoleRequest
+	15, // 13: identity.v1.IdentityService.RequestPasswordReset:input_type -> identity.v1.RequestPasswordResetRequest
+	17, // 14: identity.v1.IdentityService.ResetPassword:input_type -> identity.v1.ResetPasswordRequest
+	19, // 15: identity.v1.IdentityService.RequestEmailVerification:input_type -> identity.v1.RequestEmailVerificationRequest
+	21, // 16: identity.v1.IdentityService.VerifyEmail:input_type -> identity.v1.VerifyEmailRequest
+	24, // 17: identity.v1.IdentityService.CreateAPIKey:input_type -> identity.v1.CreateAPIKeyRequest
+	26, // 18: identity.v1.IdentityService.ListAPIKeys:input_type -> identity.v1.ListAPIKeysRequest
+	28, // 19: identity.v1.IdentityService.RevokeAPIKey:input_type -> identity.v1.RevokeAPIKeyRequest
+	30, // 20: identity.v1.IdentityService.ValidateAPIKey:input_type -> identity.v1.ValidateAPIKeyRequest
+	2,  // 21: identity.v1.IdentityService.Register:output_type -> identity.v1.RegisterResponse
+	4,  // 22: identity.v1.IdentityService.Login:output_type -> identity.v1.LoginResponse
+	6,  // 23: identity.v1.IdentityService.Refresh:output_type -> identity.v1.RefreshResponse
+	8,  // 24: identity.v1.IdentityService.Logout:output_type -> identity.v1.LogoutResponse
+	10, // 25: identity.v1.IdentityService.GetProfile:output_type -> identity.v1.GetProfileResponse
+	12, // 26: identity.v1.IdentityService.ChangePassword:output_type -> identity.v1.ChangePasswordResponse
+	14, // 27: identity.v1.IdentityService.SetUserRole:output_type -> identity.v1.SetUserRoleResponse
+	16, // 28: identity.v1.IdentityService.RequestPasswordReset:output_type -> identity.v1.RequestPasswordResetResponse
+	18, // 29: identity.v1.IdentityService.ResetPassword:output_type -> identity.v1.ResetPasswordResponse
+	20, // 30: identity.v1.IdentityService.RequestEmailVerification:output_type -> identity.v1.RequestEmailVerificationResponse
+	22, // 31: identity.v1.IdentityService.VerifyEmail:output_type -> identity.v1.VerifyEmailResponse
+	25, // 32: identity.v1.IdentityService.CreateAPIKey:output_type -> identity.v1.CreateAPIKeyResponse
+	27, // 33: identity.v1.IdentityService.ListAPIKeys:output_type -> identity.v1.ListAPIKeysResponse
+	29, // 34: identity.v1.IdentityService.RevokeAPIKey:output_type -> identity.v1.RevokeAPIKeyResponse
+	31, // 35: identity.v1.IdentityService.ValidateAPIKey:output_type -> identity.v1.ValidateAPIKeyResponse
+	21, // [21:36] is the sub-list for method output_type
+	6,  // [6:21] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_identity_v1_identity_proto_init() }
@@ -946,7 +1819,7 @@ func file_identity_v1_identity_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_identity_v1_identity_proto_rawDesc), len(file_identity_v1_identity_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

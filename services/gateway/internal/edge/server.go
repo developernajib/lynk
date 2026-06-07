@@ -16,10 +16,13 @@ import (
 // tighter than the general per-IP level on the paths attackers brute-force.
 // Extend it as auth-sensitive RPCs appear.
 var EndpointLimits = map[string]int{
-	"Login":                10,
-	"Register":             20,
-	"RequestPasswordReset": 10,
-	"ResetPassword":        10,
+	"Login":                    10,
+	"Register":                 20,
+	"RequestPasswordReset":     10,
+	"ResetPassword":            10,
+	"RequestEmailVerification": 10,
+	"VerifyEmail":              10,
+	"ValidateAPIKey":           120,
 }
 
 // BuildHandler composes the full edge chain around the bridge. The order is

@@ -63,6 +63,26 @@ type LoginThrottle interface {
 	Reset(ctx context.Context, identifier string)
 }
 
+// OTPCodes generates and hashes one-time codes; only hashes are stored.
+type OTPCodes interface {
+	NewCode() (raw, hash string, err error)
+	Hash(raw string) string
+}
+
+// Notifier delivers one-time codes out of band: email in production, a log
+// line in development. Codes never travel over the event bus.
+type Notifier interface {
+	SendOTP(ctx context.Context, email string, purpose domain.OTPPurpose, code string) error
+}
+
+// APIKeyCache caches validated keys by hash with a bounded TTL so machine
+// auth does not hit the database per call; Drop supports prompt revocation.
+type APIKeyCache interface {
+	Lookup(ctx context.Context, keyHash string) (userID, role string, ok bool)
+	Store(ctx context.Context, keyHash, keyID, userID, role string)
+	Drop(ctx context.Context, keyID string)
+}
+
 // EventPublisher records domain events in the caller's transaction (outbox).
 type EventPublisher interface {
 	Publish(ctx context.Context, events []domain.Event) error

@@ -52,6 +52,77 @@ func (q *Queries) ClaimUnpublishedIdentityOutboxEvents(ctx context.Context, limi
 	return items, nil
 }
 
+const consumeOTP = `-- name: ConsumeOTP :execrows
+UPDATE identity.otps
+SET consumed_at = $2
+WHERE id = $1 AND consumed_at IS NULL
+`
+
+type ConsumeOTPParams struct {
+	ID         pgtype.UUID        `json:"id"`
+	ConsumedAt pgtype.Timestamptz `json:"consumed_at"`
+}
+
+func (q *Queries) ConsumeOTP(ctx context.Context, arg ConsumeOTPParams) (int64, error) {
+	result, err := q.db.Exec(ctx, consumeOTP, arg.ID, arg.ConsumedAt)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const createAPIKey = `-- name: CreateAPIKey :exec
+INSERT INTO identity.api_keys (id, user_id, name, key_hash, prefix, created_at)
+VALUES ($1, $2, $3, $4, $5, $6)
+`
+
+type CreateAPIKeyParams struct {
+	ID        pgtype.UUID        `json:"id"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	Name      string             `json:"name"`
+	KeyHash   string             `json:"key_hash"`
+	Prefix    string             `json:"prefix"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) error {
+	_, err := q.db.Exec(ctx, createAPIKey,
+		arg.ID,
+		arg.UserID,
+		arg.Name,
+		arg.KeyHash,
+		arg.Prefix,
+		arg.CreatedAt,
+	)
+	return err
+}
+
+const createOTP = `-- name: CreateOTP :exec
+INSERT INTO identity.otps (id, user_id, purpose, code_hash, expires_at, created_at)
+VALUES ($1, $2, $3, $4, $5, $6)
+`
+
+type CreateOTPParams struct {
+	ID        pgtype.UUID        `json:"id"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	Purpose   string             `json:"purpose"`
+	CodeHash  string             `json:"code_hash"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) CreateOTP(ctx context.Context, arg CreateOTPParams) error {
+	_, err := q.db.Exec(ctx, createOTP,
+		arg.ID,
+		arg.UserID,
+		arg.Purpose,
+		arg.CodeHash,
+		arg.ExpiresAt,
+		arg.CreatedAt,
+	)
+	return err
+}
+
 const createRefreshToken = `-- name: CreateRefreshToken :exec
 INSERT INTO identity.refresh_tokens (id, user_id, token_hash, expires_at, created_at)
 VALUES ($1, $2, $3, $4, $5)
@@ -110,6 +181,57 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	return err
 }
 
+const getAPIKeyByHash = `-- name: GetAPIKeyByHash :one
+SELECT id, user_id, name, key_hash, prefix, created_at, revoked_at
+FROM identity.api_keys
+WHERE key_hash = $1
+`
+
+func (q *Queries) GetAPIKeyByHash(ctx context.Context, keyHash string) (IdentityApiKey, error) {
+	row := q.db.QueryRow(ctx, getAPIKeyByHash, keyHash)
+	var i IdentityApiKey
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.KeyHash,
+		&i.Prefix,
+		&i.CreatedAt,
+		&i.RevokedAt,
+	)
+	return i, err
+}
+
+const getActiveOTP = `-- name: GetActiveOTP :one
+SELECT id, user_id, purpose, code_hash, expires_at, consumed_at, created_at
+FROM identity.otps
+WHERE user_id = $1 AND purpose = $2 AND consumed_at IS NULL AND expires_at > $3
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+type GetActiveOTPParams struct {
+	UserID    pgtype.UUID        `json:"user_id"`
+	Purpose   string             `json:"purpose"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+}
+
+// The newest live code wins; issuing a new code supersedes older ones.
+func (q *Queries) GetActiveOTP(ctx context.Context, arg GetActiveOTPParams) (IdentityOtp, error) {
+	row := q.db.QueryRow(ctx, getActiveOTP, arg.UserID, arg.Purpose, arg.ExpiresAt)
+	var i IdentityOtp
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Purpose,
+		&i.CodeHash,
+		&i.ExpiresAt,
+		&i.ConsumedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getRefreshTokenByHash = `-- name: GetRefreshTokenByHash :one
 SELECT id, user_id, token_hash, expires_at, revoked_at, created_at
 FROM identity.refresh_tokens
@@ -131,7 +253,7 @@ func (q *Queries) GetRefreshTokenByHash(ctx context.Context, tokenHash string) (
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, full_name, role, status, version, created_at, updated_at
+SELECT id, email, password_hash, full_name, role, status, version, created_at, updated_at, email_verified_at
 FROM identity.users
 WHERE email = $1
 `
@@ -149,12 +271,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (IdentityUse
 		&i.Version,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, password_hash, full_name, role, status, version, created_at, updated_at
+SELECT id, email, password_hash, full_name, role, status, version, created_at, updated_at, email_verified_at
 FROM identity.users
 WHERE id = $1
 `
@@ -172,6 +295,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (IdentityUser
 		&i.Version,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
@@ -198,6 +322,41 @@ func (q *Queries) InsertIdentityOutboxEvent(ctx context.Context, arg InsertIdent
 	return err
 }
 
+const listAPIKeysForUser = `-- name: ListAPIKeysForUser :many
+SELECT id, user_id, name, key_hash, prefix, created_at, revoked_at
+FROM identity.api_keys
+WHERE user_id = $1
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListAPIKeysForUser(ctx context.Context, userID pgtype.UUID) ([]IdentityApiKey, error) {
+	rows, err := q.db.Query(ctx, listAPIKeysForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []IdentityApiKey
+	for rows.Next() {
+		var i IdentityApiKey
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.KeyHash,
+			&i.Prefix,
+			&i.CreatedAt,
+			&i.RevokedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markIdentityOutboxEventPublished = `-- name: MarkIdentityOutboxEventPublished :exec
 UPDATE identity.outbox
 SET published_at = $2
@@ -212,6 +371,27 @@ type MarkIdentityOutboxEventPublishedParams struct {
 func (q *Queries) MarkIdentityOutboxEventPublished(ctx context.Context, arg MarkIdentityOutboxEventPublishedParams) error {
 	_, err := q.db.Exec(ctx, markIdentityOutboxEventPublished, arg.ID, arg.PublishedAt)
 	return err
+}
+
+const revokeAPIKey = `-- name: RevokeAPIKey :execrows
+UPDATE identity.api_keys
+SET revoked_at = $3
+WHERE id = $1 AND user_id = $2 AND revoked_at IS NULL
+`
+
+type RevokeAPIKeyParams struct {
+	ID        pgtype.UUID        `json:"id"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	RevokedAt pgtype.Timestamptz `json:"revoked_at"`
+}
+
+// Owner-scoped so one user can never revoke another's key by id.
+func (q *Queries) RevokeAPIKey(ctx context.Context, arg RevokeAPIKeyParams) (int64, error) {
+	result, err := q.db.Exec(ctx, revokeAPIKey, arg.ID, arg.UserID, arg.RevokedAt)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const revokeAllRefreshTokensForUser = `-- name: RevokeAllRefreshTokensForUser :exec
@@ -244,6 +424,22 @@ type RevokeRefreshTokenParams struct {
 
 func (q *Queries) RevokeRefreshToken(ctx context.Context, arg RevokeRefreshTokenParams) error {
 	_, err := q.db.Exec(ctx, revokeRefreshToken, arg.ID, arg.RevokedAt)
+	return err
+}
+
+const setEmailVerified = `-- name: SetEmailVerified :exec
+UPDATE identity.users
+SET email_verified_at = $2, version = version + 1, updated_at = $2
+WHERE id = $1 AND email_verified_at IS NULL
+`
+
+type SetEmailVerifiedParams struct {
+	ID              pgtype.UUID        `json:"id"`
+	EmailVerifiedAt pgtype.Timestamptz `json:"email_verified_at"`
+}
+
+func (q *Queries) SetEmailVerified(ctx context.Context, arg SetEmailVerifiedParams) error {
+	_, err := q.db.Exec(ctx, setEmailVerified, arg.ID, arg.EmailVerifiedAt)
 	return err
 }
 

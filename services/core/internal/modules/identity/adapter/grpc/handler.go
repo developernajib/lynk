@@ -24,6 +24,8 @@ type Handler struct {
 	getProfile     *application.GetProfile
 	changePassword *application.ChangePassword
 	setUserRole    *application.SetUserRole
+	otps           *application.OTPService
+	apiKeys        *application.APIKeyService
 }
 
 // NewHandler wires the handler.
@@ -35,6 +37,8 @@ func NewHandler(
 	getProfile *application.GetProfile,
 	changePassword *application.ChangePassword,
 	setUserRole *application.SetUserRole,
+	otps *application.OTPService,
+	apiKeys *application.APIKeyService,
 ) *Handler {
 	return &Handler{
 		register:       register,
@@ -44,6 +48,8 @@ func NewHandler(
 		getProfile:     getProfile,
 		changePassword: changePassword,
 		setUserRole:    setUserRole,
+		otps:           otps,
+		apiKeys:        apiKeys,
 	}
 }
 
@@ -134,6 +140,109 @@ func (h *Handler) SetUserRole(ctx context.Context, req *identityv1.SetUserRoleRe
 	return &identityv1.SetUserRoleResponse{User: toProtoUser(user)}, nil
 }
 
+// RequestPasswordReset issues a reset code; the response never reveals
+// whether the account exists.
+func (h *Handler) RequestPasswordReset(ctx context.Context, req *identityv1.RequestPasswordResetRequest) (*identityv1.RequestPasswordResetResponse, error) {
+	if err := h.otps.RequestPasswordReset(ctx, req.GetEmail()); err != nil {
+		return nil, classify(err)
+	}
+	return &identityv1.RequestPasswordResetResponse{}, nil
+}
+
+// ResetPassword consumes the code and replaces the credential.
+func (h *Handler) ResetPassword(ctx context.Context, req *identityv1.ResetPasswordRequest) (*identityv1.ResetPasswordResponse, error) {
+	if err := h.otps.ResetPassword(ctx, req.GetEmail(), req.GetCode(), req.GetNewPassword()); err != nil {
+		return nil, classify(err)
+	}
+	return &identityv1.ResetPasswordResponse{}, nil
+}
+
+// RequestEmailVerification sends the caller a verification code.
+func (h *Handler) RequestEmailVerification(ctx context.Context, _ *identityv1.RequestEmailVerificationRequest) (*identityv1.RequestEmailVerificationResponse, error) {
+	principal, err := requirePrincipal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := h.otps.RequestEmailVerification(ctx, principal.UserID); err != nil {
+		return nil, classify(err)
+	}
+	return &identityv1.RequestEmailVerificationResponse{}, nil
+}
+
+// VerifyEmail consumes the code and marks the caller's email verified.
+func (h *Handler) VerifyEmail(ctx context.Context, req *identityv1.VerifyEmailRequest) (*identityv1.VerifyEmailResponse, error) {
+	principal, err := requirePrincipal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := h.otps.VerifyEmail(ctx, principal.UserID, req.GetCode()); err != nil {
+		return nil, classify(err)
+	}
+	return &identityv1.VerifyEmailResponse{}, nil
+}
+
+// CreateAPIKey mints a machine credential; the secret appears in this
+// response and never again.
+func (h *Handler) CreateAPIKey(ctx context.Context, req *identityv1.CreateAPIKeyRequest) (*identityv1.CreateAPIKeyResponse, error) {
+	principal, err := requirePrincipal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	key, secret, err := h.apiKeys.Create(ctx, principal.UserID, req.GetName())
+	if err != nil {
+		return nil, classify(err)
+	}
+	return &identityv1.CreateAPIKeyResponse{ApiKey: toProtoAPIKey(key), Key: secret}, nil
+}
+
+// ListAPIKeys lists the caller's keys, metadata only.
+func (h *Handler) ListAPIKeys(ctx context.Context, _ *identityv1.ListAPIKeysRequest) (*identityv1.ListAPIKeysResponse, error) {
+	principal, err := requirePrincipal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	keys, err := h.apiKeys.List(ctx, principal.UserID)
+	if err != nil {
+		return nil, classify(err)
+	}
+	protoKeys := make([]*identityv1.APIKey, 0, len(keys))
+	for _, key := range keys {
+		protoKeys = append(protoKeys, toProtoAPIKey(key))
+	}
+	return &identityv1.ListAPIKeysResponse{ApiKeys: protoKeys}, nil
+}
+
+// RevokeAPIKey disables one of the caller's keys.
+func (h *Handler) RevokeAPIKey(ctx context.Context, req *identityv1.RevokeAPIKeyRequest) (*identityv1.RevokeAPIKeyResponse, error) {
+	principal, err := requirePrincipal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := h.apiKeys.Revoke(ctx, principal.UserID, req.GetId()); err != nil {
+		return nil, classify(err)
+	}
+	return &identityv1.RevokeAPIKeyResponse{}, nil
+}
+
+// ValidateAPIKey resolves a presented key to its principal.
+func (h *Handler) ValidateAPIKey(ctx context.Context, req *identityv1.ValidateAPIKeyRequest) (*identityv1.ValidateAPIKeyResponse, error) {
+	userID, role, err := h.apiKeys.Validate(ctx, req.GetKey())
+	if err != nil {
+		return nil, classify(err)
+	}
+	return &identityv1.ValidateAPIKeyResponse{UserId: userID, Role: role}, nil
+}
+
+func toProtoAPIKey(key *domain.APIKey) *identityv1.APIKey {
+	return &identityv1.APIKey{
+		Id:        key.ID(),
+		Name:      key.Name(),
+		Prefix:    key.Prefix(),
+		CreatedAt: key.CreatedAt().Unix(),
+		Revoked:   key.Revoked(),
+	}
+}
+
 func requirePrincipal(ctx context.Context) (auth.Principal, error) {
 	principal, ok := auth.FromContext(ctx)
 	if !ok {
@@ -150,6 +259,10 @@ func classify(err error) error {
 	case errors.Is(err, domain.ErrInvalidCredentials), errors.Is(err, domain.ErrRefreshTokenInvalid):
 		// One generic message for every credential failure: no enumeration.
 		return apperror.Wrap(err, apperror.KindUnauthenticated, "invalid_credentials", "invalid credentials")
+	case errors.Is(err, domain.ErrInvalidOTP):
+		return apperror.Wrap(err, apperror.KindUnauthenticated, "invalid_code", "invalid or expired code")
+	case errors.Is(err, domain.ErrAPIKeyNotFound):
+		return apperror.Wrap(err, apperror.KindUnauthenticated, "invalid_api_key", "invalid api key")
 	case errors.Is(err, domain.ErrAccountLocked):
 		return apperror.Wrap(err, apperror.KindRateLimited, "account_locked", "too many attempts, try again later")
 	case errors.Is(err, domain.ErrAccountDisabled):

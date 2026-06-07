@@ -46,6 +46,26 @@ type ExampleOutbox struct {
 	PublishedAt pgtype.Timestamptz `json:"published_at"`
 }
 
+type IdentityApiKey struct {
+	ID        pgtype.UUID        `json:"id"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	Name      string             `json:"name"`
+	KeyHash   string             `json:"key_hash"`
+	Prefix    string             `json:"prefix"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	RevokedAt pgtype.Timestamptz `json:"revoked_at"`
+}
+
+type IdentityOtp struct {
+	ID         pgtype.UUID        `json:"id"`
+	UserID     pgtype.UUID        `json:"user_id"`
+	Purpose    string             `json:"purpose"`
+	CodeHash   string             `json:"code_hash"`
+	ExpiresAt  pgtype.Timestamptz `json:"expires_at"`
+	ConsumedAt pgtype.Timestamptz `json:"consumed_at"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
 type IdentityOutbox struct {
 	ID          pgtype.UUID        `json:"id"`
 	Subject     string             `json:"subject"`
@@ -64,13 +84,14 @@ type IdentityRefreshToken struct {
 }
 
 type IdentityUser struct {
-	ID           pgtype.UUID        `json:"id"`
-	Email        string             `json:"email"`
-	PasswordHash string             `json:"password_hash"`
-	FullName     string             `json:"full_name"`
-	Role         string             `json:"role"`
-	Status       string             `json:"status"`
-	Version      int64              `json:"version"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	ID              pgtype.UUID        `json:"id"`
+	Email           string             `json:"email"`
+	PasswordHash    string             `json:"password_hash"`
+	FullName        string             `json:"full_name"`
+	Role            string             `json:"role"`
+	Status          string             `json:"status"`
+	Version         int64              `json:"version"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	EmailVerifiedAt pgtype.Timestamptz `json:"email_verified_at"`
 }

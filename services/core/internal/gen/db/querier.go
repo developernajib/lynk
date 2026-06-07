@@ -15,13 +15,19 @@ type Querier interface {
 	// The relay claims a batch with FOR UPDATE SKIP LOCKED so multiple worker
 	// replicas never double-publish the same row.
 	ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32) ([]ClaimUnpublishedOutboxEventsRow, error)
+	ConsumeOTP(ctx context.Context, arg ConsumeOTPParams) (int64, error)
+	CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) error
 	// Example module queries. sqlc compiles these into type-safe Go under
 	// internal/gen/db; repositories call the generated methods, never raw SQL.
 	CreateNote(ctx context.Context, arg CreateNoteParams) error
+	CreateOTP(ctx context.Context, arg CreateOTPParams) error
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) error
 	// Identity module queries.
 	CreateUser(ctx context.Context, arg CreateUserParams) error
 	DeletePolicy(ctx context.Context, name string) (int64, error)
+	GetAPIKeyByHash(ctx context.Context, keyHash string) (IdentityApiKey, error)
+	// The newest live code wins; issuing a new code supersedes older ones.
+	GetActiveOTP(ctx context.Context, arg GetActiveOTPParams) (IdentityOtp, error)
 	// Reads are owner-scoped so one user can never address another's note by id.
 	GetNote(ctx context.Context, arg GetNoteParams) (ExampleNote, error)
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (IdentityRefreshToken, error)
@@ -32,6 +38,7 @@ type Querier interface {
 	InsertAuditEntry(ctx context.Context, arg InsertAuditEntryParams) error
 	InsertIdentityOutboxEvent(ctx context.Context, arg InsertIdentityOutboxEventParams) error
 	InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventParams) error
+	ListAPIKeysForUser(ctx context.Context, userID pgtype.UUID) ([]IdentityApiKey, error)
 	ListAllPolicies(ctx context.Context) ([]AuthzPolicy, error)
 	ListAuditEntries(ctx context.Context, arg ListAuditEntriesParams) ([]AuditEntry, error)
 	// Authorization module queries.
@@ -39,9 +46,12 @@ type Querier interface {
 	ListNotes(ctx context.Context, arg ListNotesParams) ([]ExampleNote, error)
 	MarkIdentityOutboxEventPublished(ctx context.Context, arg MarkIdentityOutboxEventPublishedParams) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
+	// Owner-scoped so one user can never revoke another's key by id.
+	RevokeAPIKey(ctx context.Context, arg RevokeAPIKeyParams) (int64, error)
 	// ChangePassword and security events revoke every live session at once.
 	RevokeAllRefreshTokensForUser(ctx context.Context, arg RevokeAllRefreshTokensForUserParams) error
 	RevokeRefreshToken(ctx context.Context, arg RevokeRefreshTokenParams) error
+	SetEmailVerified(ctx context.Context, arg SetEmailVerifiedParams) error
 	// Used by the seeder for idempotent admin promotion.
 	SetUserRoleByEmail(ctx context.Context, arg SetUserRoleByEmailParams) (int64, error)
 	// UpdateNote is version-guarded: :execrows returns the affected-row count so
