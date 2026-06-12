@@ -70,7 +70,7 @@ jobs:
       - name: Build image
         run: docker build -t lynk-${{ matrix.service }}:ci services/${{ matrix.service }}
       - name: Scan image
-        uses: aquasecurity/trivy-action@0.31.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: lynk-${{ matrix.service }}:ci
           format: table
