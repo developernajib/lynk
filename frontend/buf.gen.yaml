@@ -1,0 +1,11 @@
+# TypeScript client generation from the core service's protos:
+#   npm run generate
+# Generated code is committed but never hand-edited.
+version: v2
+clean: true
+
+plugins:
+  - remote: buf.build/bufbuild/es
+    out: src/gen
+    opt:
+      - target=ts

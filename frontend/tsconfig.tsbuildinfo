@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/transport.ts","./src/vite-env.d.ts","./src/gen/audit/v1/audit_pb.ts","./src/gen/authz/v1/authz_pb.ts","./src/gen/buf/validate/validate_pb.ts","./src/gen/example/v1/example_pb.ts","./src/gen/identity/v1/identity_pb.ts","./src/pages/login.tsx","./src/pages/notes.tsx"],"version":"6.0.3"}
