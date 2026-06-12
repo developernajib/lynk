@@ -19,7 +19,7 @@ jobs:
       run:
         working-directory: services/${{ matrix.service }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v5
         with:
           go-version: stable
@@ -38,7 +38,7 @@ jobs:
   proto:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: bufbuild/buf-action@v1
         with:
           input: services/core
@@ -51,7 +51,7 @@ jobs:
   secrets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # Full history so gitleaks scans every commit, not just the tip.
           fetch-depth: 0
@@ -66,7 +66,7 @@ jobs:
       matrix:
         service: [core, gateway]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build image
         run: docker build -t lynk-${{ matrix.service }}:ci services/${{ matrix.service }}
       - name: Scan image
